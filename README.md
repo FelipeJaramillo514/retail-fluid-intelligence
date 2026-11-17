@@ -24,6 +24,7 @@ npm start
 - **Resumen:** ventas mensuales, comparación anual, países, líneas de producto y filtros por año, país, región y línea.
 - **Clientes & ABC:** clientes con mayores ventas, tabla y curva acumulada ABC con cortes 80%/95%.
 - **Mercado & ANOVA:** mapa esquemático por país, ventas promedio por línea agrupadas por región, productos más vendidos, relación entre `discount_proxy` y unidades, y resultado ANOVA.
+- **Método:** flujo CSV/JSON/SQL → ETL → SQLite → DAX/Power BI y API web; granularidad, modelo estrella, controles de calidad, fórmulas, guía de lectura y límites de la muestra.
 
 ## Interpretación de datos
 

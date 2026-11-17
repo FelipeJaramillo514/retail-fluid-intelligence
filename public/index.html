@@ -43,6 +43,7 @@
         <button class="nav-item active" data-view="overview"><span class="nav-icon">◌</span><span>Resumen</span><kbd>01</kbd></button>
         <button class="nav-item" data-view="customers"><span class="nav-icon">◉</span><span>Clientes & ABC</span><kbd>02</kbd></button>
         <button class="nav-item" data-view="market"><span class="nav-icon">⌁</span><span>Mercado & ANOVA</span><kbd>03</kbd></button>
+        <button class="nav-item" data-view="method"><span class="nav-icon">⌘</span><span>Método</span><kbd>04</kbd></button>
       </nav>
 
       <div class="sidebar-spacer"></div>
@@ -121,6 +122,7 @@
           <div class="section-meta"><span class="meta-dot"></span><span id="latestMonthLabel">PERÍODO COMPLETO</span></div>
         </div>
 
+        <div class="guide-strip"><strong>LECTURA</strong><span>La línea suma ventas por mes. El cambio mensual compara el último mes con el anterior; YoY compara ese mismo mes con el año previo. 2005 cubre solo parte del año. Los filtros actualizan las visualizaciones de ventas.</span></div>
         <div class="overview-grid">
           <article class="panel trend-panel">
             <div class="panel-heading">
@@ -170,6 +172,7 @@
           <div class="abc-total" id="abcTotal">92 CLIENTES</div>
         </div>
 
+        <div class="guide-strip"><strong>LECTURA</strong><span>El ranking ordena clientes por ventas dentro de la selección. La curva muestra qué porcentaje del total acumula el grupo de mayor venta; la clase ABC usa los cortes 80% y 95%.</span></div>
         <div class="abc-summary-grid" id="abcCards"></div>
         <div class="customers-grid">
           <article class="panel pareto-panel">
@@ -209,6 +212,7 @@
           <div class="stat-signature"><span>F</span><span>ANOVA / 1 VÍA</span></div>
         </div>
 
+        <div class="guide-strip"><strong>LECTURA</strong><span>El mapa compara ventas por país en centroides aproximados. El promedio es por línea transaccional, no por cliente ni por mes. La dispersión usa una brecha de precio frente a MSRP como proxy.</span></div>
         <div class="market-grid">
           <article class="panel map-panel">
             <div class="panel-heading">
@@ -262,6 +266,82 @@
           <article class="limit-card"><span class="limit-index">LÍMITE 01</span><strong>Rentabilidad no estimable</strong><p>Sin costos ni gastos no se calcula utilidad. Ventas por línea no equivalen a margen.</p><span class="limit-status">CAMPO AUSENTE</span></article>
           <article class="limit-card"><span class="limit-index">LÍMITE 02</span><strong>Canal no disponible</strong><p>No existe canal de venta en el origen. Territorio y región son dimensiones geográficas.</p><span class="limit-status">CAMPO AUSENTE</span></article>
           <article class="limit-card"><span class="limit-index">LÍMITE 03</span><strong>Moneda sin documentar</strong><p>Los importes se muestran sin símbolo monetario para no atribuir una divisa no confirmada.</p><span class="limit-status">METADATO AUSENTE</span></article>
+        </div>
+      </section>
+
+      <section class="view-section" id="view-method">
+        <div class="section-heading page-heading method-heading">
+          <div><span class="section-kicker">04 / CÓMO SE CONSTRUYÓ</span><h2>Del dato a la lectura</h2><p>El recorrido técnico, las reglas de cálculo y la forma correcta de interpretar este tablero.</p></div>
+          <div class="stat-signature"><span>ETL</span><span>TRAZABILIDAD</span></div>
+        </div>
+
+        <article class="method-summary panel">
+          <div><span class="section-kicker">OBJETIVO</span><h3>Entender qué impulsa las ventas y cómo se distribuye su valor.</h3><p>Usamos una muestra histórica de pedidos para describir ventas, clientes, productos y geografías. Cada cifra proviene del dataset procesado; las categorías ausentes se declaran como límites en vez de estimarse.</p></div>
+          <div class="method-period"><small>PERÍODO OBSERVADO</small><strong id="methodPeriod">—</strong><small>VENTAS REGISTRADAS · MONEDA NO IDENTIFICADA</small><strong id="methodSales">—</strong><span id="methodScope">— filas de venta</span></div>
+        </article>
+
+        <div class="method-section-label"><span class="section-kicker">01 / PROCESO ETL</span><span>EXTRAER → TRANSFORMAR → CARGAR → SERVIR</span></div>
+        <div class="etl-flow">
+          <article class="method-stage"><span class="method-stepno">01</span><span class="method-stage-label">EXTRAER</span><h3>Tres fuentes</h3><p><strong>CSV</strong> aporta las líneas de venta. El <strong>JSON</strong> mapea territorios a regiones y el <strong>SQL</strong> contiene equivalencias de estados. Las referencias enriquecen el análisis; no son transacciones adicionales.</p><div class="method-tags"><span>sales_data_sample.csv</span><span>territory_regions.json</span><span>reference_source.sql</span></div></article>
+          <article class="method-stage"><span class="method-stepno">02</span><span class="method-stage-label">TRANSFORMAR</span><h3>Limpiar y derivar</h3><p>Python conserva una fila por línea de pedido, identificada por <code>order_number + order_line_number</code>, convierte fechas a ISO y agrega período, región y <code>discount_proxy</code>. En Power Query M se promueven encabezados y se interpretan importes con cultura <code>es-CO</code>.</p><div class="method-tags"><span>tipos consistentes</span><span>claves verificadas</span></div></article>
+          <article class="method-stage"><span class="method-stepno">03</span><span class="method-stage-label">CARGAR</span><h3>Modelo analítico</h3><p>El proceso escribe hechos y dimensiones en SQLite y CSV procesados. La tabla <code>fact_sales</code> conserva el detalle de pedido; las dimensiones describen producto, cliente, región y calendario para agregarlo.</p><div class="method-tags"><span>SQLite</span><span>modelo estrella</span></div></article>
+          <article class="method-stage"><span class="method-stepno">04</span><span class="method-stage-label">SERVIR</span><h3>Power BI y web</h3><p>El proyecto incluye medidas DAX para el modelo semántico de Power BI. Esta web consulta SQLite en solo lectura mediante una API Node.js y dibuja las vistas en SVG; el ANOVA viene del artefacto estadístico del ETL.</p><div class="method-tags"><span>Node.js API</span><span>DAX</span><span>SVG</span></div></article>
+        </div>
+
+        <div class="method-section-label"><span class="section-kicker">02 / CALIDAD Y MODELO</span><span>GRANULARIDAD: UNA FILA POR LÍNEA DE PEDIDO</span></div>
+        <div class="method-quality-grid">
+          <article class="method-quality"><strong id="methodRows">—</strong><span>líneas transaccionales</span></article>
+          <article class="method-quality"><strong id="methodCustomers">—</strong><span>clientes identificados</span></article>
+          <article class="method-quality"><strong id="methodProducts">—</strong><span>códigos de producto</span></article>
+          <article class="method-quality"><strong id="methodCountries">—</strong><span>países observados</span></article>
+          <article class="method-quality quality-pass"><strong>0 · 0 · 0</strong><span>nulos requeridos · claves duplicadas · relaciones huérfanas</span></article>
+        </div>
+        <div class="method-model panel">
+          <div class="method-model-copy"><span class="section-kicker">MODELO ESTRELLA</span><h3>El hecho al centro; las dimensiones dan contexto.</h3><p>La tabla de hechos registra ventas y unidades por pedido. Las dimensiones permiten segmentar el mismo valor por fecha, cliente, producto o región. Así se evita mezclar niveles de detalle al comparar.</p><div class="method-note">Control ETL: clave de línea única, campos requeridos sin nulos, relaciones sin huérfanos y SQLite con integridad comprobada.</div></div>
+          <div class="schema-diagram" aria-label="Diagrama conceptual del modelo estrella">
+            <div class="schema-dimension schema-top">Calendar<br><small>fecha · mes · año</small></div>
+            <div class="schema-dimension schema-left">dim_customer<br><small>cliente</small></div>
+            <div class="schema-fact">fact_sales<br><small>ventas · unidades · pedido</small></div>
+            <div class="schema-dimension schema-right">dim_product<br><small>producto · línea</small></div>
+            <div class="schema-dimension schema-bottom">dim_region<br><small>territorio · región</small></div>
+            <span class="schema-link link-top"></span><span class="schema-link link-left"></span><span class="schema-link link-right"></span><span class="schema-link link-bottom"></span>
+          </div>
+        </div>
+
+        <div class="method-two-col">
+          <article class="panel method-card">
+            <span class="section-kicker">03 / MEDIDAS DAX</span><h3>La definición detrás del indicador</h3>
+            <p>El modelo semántico usa medidas para que las cifras respondan al contexto de filtros. Estas son las reglas principales del proyecto:</p>
+            <div class="formula-row"><code>Ventas</code><pre>SUM(fact_sales[sales])</pre></div>
+            <div class="formula-row"><code>Crecimiento mensual %</code><pre>(Ventas − Ventas mes anterior) ÷ Ventas mes anterior</pre></div>
+            <div class="formula-row"><code>Crecimiento interanual %</code><pre>(Ventas − Ventas año anterior) ÷ Ventas año anterior</pre></div>
+            <div class="formula-row"><code>Clase ABC</code><pre>Acumulado ≤ 80% → A · ≤ 95% → B · resto → C</pre></div>
+            <p class="method-footnote">Las medidas completas están en <code>powerbi/medidas.dax</code> del proyecto. La web reproduce estos cálculos sobre SQLite; el ANOVA exploratorio no cambia con los filtros. El PBIX guardado requiere todavía construir y guardar sus visuales analíticos.</p>
+          </article>
+          <article class="panel method-card method-howto">
+            <span class="section-kicker">04 / USO DEL TABLERO</span><h3>Cómo leer y explorar</h3>
+            <ol class="method-list">
+              <li><strong>Elige un contexto.</strong> Año, país, región y línea filtran los indicadores y gráficos de ventas.</li>
+              <li><strong>Compara períodos equivalentes.</strong> MoM compara el último mes disponible con el mes anterior; YoY compara ese mes con el mismo mes del año previo.</li>
+              <li><strong>Lee ABC como acumulación.</strong> Clientes se ordenan por venta descendente; el porcentaje acumulado determina la clase según 80% y 95%.</li>
+              <li><strong>Interpreta el mapa con cautela.</strong> La burbuja representa ventas por país; las ubicaciones son centroides aproximados, no límites cartográficos.</li>
+              <li><strong>Usa filtros para segmentar.</strong> El conteo de filas indica cuántas líneas quedan en el contexto seleccionado.</li>
+            </ol>
+          </article>
+        </div>
+
+        <article class="method-anova panel">
+          <div><span class="section-kicker">05 / VALIDACIÓN ESTADÍSTICA</span><h3>ANOVA de una vía: ¿todas las medias son iguales?</h3><p>Comparamos la media de ventas por línea de producto. La observación es una línea de pedido. La hipótesis nula sostiene que todas las medias de producto son iguales.</p></div>
+          <div class="method-anova-result"><div><small>F</small><strong id="methodAnovaF">—</strong></div><div><small>p-VALOR</small><strong id="methodAnovaP">—</strong></div><div><small>DECISIÓN · α = 0,05</small><strong id="methodAnovaDecision">—</strong></div></div>
+          <p class="method-note">Con p &lt; 0,05 se rechaza la hipótesis nula: al menos una media difiere. ANOVA es una prueba ómnibus; no identifica qué pares difieren. Las líneas de una misma orden o cliente podrían no ser independientes, por lo que el resultado es exploratorio y no causal.</p>
+        </article>
+
+        <div class="method-section-label"><span class="section-kicker">06 / QUÉ NO PUEDE CONCLUIRSE</span><span>LOS LÍMITES TAMBIÉN SON PARTE DEL ANÁLISIS</span></div>
+        <div class="method-boundaries">
+          <article><strong>Utilidad</strong><p>Faltan costos y gastos. Ventas no equivalen a ganancia.</p></article>
+          <article><strong>Canal</strong><p>No hay canal comercial en el origen. Región y territorio no son canal.</p></article>
+          <article><strong>Descuento</strong><p><code>discount_proxy</code> compara precio unitario y MSRP; no mide una promoción observada.</p></article>
+          <article><strong>Moneda y alcance</strong><p>La moneda no está documentada y la muestra representa una compañía, no todo el retail multinacional.</p></article>
         </div>
       </section>
 

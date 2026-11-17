@@ -247,6 +247,19 @@ function renderAnova(anova) {
   $('#anovaSummary').textContent = `H₀: las medias de venta por línea de producto son iguales. F(${anova.df_between}, ${anova.df_within}) = ${fmt2.format(anova.F)}; p = ${Number(anova.p_value).toExponential(2)}. La prueba está calculada sobre el conjunto completo y no cambia con los filtros del tablero.`;
 }
 
+function renderMethod(meta) {
+  $('#methodPeriod').textContent = `${meta.date_min} — ${meta.date_max}`;
+  $('#methodSales').textContent = fmt2.format(meta.sales_total);
+  $('#methodScope').textContent = `${fmt0.format(meta.rows)} líneas de pedido`;
+  $('#methodRows').textContent = fmt0.format(meta.rows);
+  $('#methodCustomers').textContent = fmt0.format(meta.customers);
+  $('#methodProducts').textContent = fmt0.format(meta.products);
+  $('#methodCountries').textContent = fmt0.format(meta.countries.length);
+  $('#methodAnovaF').textContent = fmt2.format(meta.anova.F);
+  $('#methodAnovaP').textContent = Number(meta.anova.p_value).toExponential(2).replace('.', ',');
+  $('#methodAnovaDecision').textContent = meta.anova.p_value < meta.anova.alpha ? 'Rechazar H₀' : 'No rechazar H₀';
+}
+
 function emptyChart(message) {
   return `<text x="50%" y="50%" text-anchor="middle" fill="#7f9188" font-family="var(--mono)" font-size="12">${escapeHtml(message)}</text>`;
 }
@@ -316,6 +329,7 @@ async function init() {
     appendOptions();
     $('#footerSource').textContent = `${fmt0.format(metadata.rows)} líneas · ${metadata.date_min} — ${metadata.date_max}`;
     $('#filterCount').textContent = `${fmt0.format(metadata.rows)} LÍNEAS DISPONIBLES`;
+    renderMethod(metadata);
     renderAnova(metadata.anova);
     $('#loadingState').hidden = true;
     await loadDashboard();
@@ -332,6 +346,8 @@ async function init() {
   });
   document.querySelectorAll('[data-view]').forEach((button) => button.addEventListener('click', () => switchView(button.dataset.view)));
   document.querySelectorAll('[data-view-link]').forEach((button) => button.addEventListener('click', () => switchView(button.dataset.viewLink)));
+  const requestedView = new URLSearchParams(window.location.search).get('view');
+  if (['overview', 'customers', 'market', 'method'].includes(requestedView)) switchView(requestedView);
 }
 
 init();

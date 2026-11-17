@@ -6,3 +6,4 @@ npm-debug.log*
 *.log
 preview.png
 full_preview.png
+cdp-profile/
