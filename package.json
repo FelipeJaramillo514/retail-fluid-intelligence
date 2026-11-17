@@ -1,0 +1,12 @@
+{
+  "name": "retail-fluid-intelligence",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Tablero local de analítica retail basado en el ETL del proyecto final.",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=22.5.0"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "rows": 2823,
+  "customers": 92,
+  "products": 109,
+  "countries": 19,
+  "date_min": "2003-01-06",
+  "date_max": "2005-05-31",
+  "sales_total": 10032628.85,
+  "csv_source": "data\\raw\\sales_data_sample.csv",
+  "source_note": "CSV contiene las transacciones; JSON aporta nombres de region; SQL aporta agrupacion auxiliar de estados; SQLite es destino analitico. Las referencias no son fuentes independientes de transacciones."
+}

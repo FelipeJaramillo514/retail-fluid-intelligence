@@ -1,0 +1,43 @@
+{
+  "test": "ANOVA de una via: SALES por PRODUCTLINE",
+  "observational_unit": "linea de pedido",
+  "n": 2823,
+  "groups": {
+    "Motorcycles": {
+      "n": 331,
+      "mean_sales": 3523.8318429003025
+    },
+    "Classic Cars": {
+      "n": 967,
+      "mean_sales": 4053.3771044467426
+    },
+    "Trucks and Buses": {
+      "n": 301,
+      "mean_sales": 3746.8100996677745
+    },
+    "Vintage Cars": {
+      "n": 607,
+      "mean_sales": 3135.3391103789127
+    },
+    "Planes": {
+      "n": 306,
+      "mean_sales": 3186.286176470588
+    },
+    "Ships": {
+      "n": 234,
+      "mean_sales": 3053.150128205128
+    },
+    "Trains": {
+      "n": 77,
+      "mean_sales": 2938.226883116883
+    }
+  },
+  "F": 25.225200006553226,
+  "df_between": 6,
+  "df_within": 2816,
+  "p_value": 2.57686825531145e-29,
+  "alpha": 0.05,
+  "decision": "Rechazar H0: al menos una media difiere",
+  "null_hypothesis": "Las medias de ventas por linea de producto son iguales",
+  "limitations": "Las lineas dentro de la misma orden/cliente pueden no ser independientes; el dataset no permite inferencia causal. ANOVA omnibus no identifica que pares difieren."
+}
