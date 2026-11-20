@@ -150,6 +150,11 @@
               <a href="https://unstats.un.org/unsd/methodology/m49/overview/">Ver las tablas web de la ONU</a>
             </article>
           </div>
+          <article class="panel table-panel journey-example data-preview" id="previewRaw">
+            <div class="panel-heading table-heading"><div><h4>Así llegan los datos: vista previa de la extracción</h4><p>Primeras 8 líneas de <code>sales_data_sample.csv</code> tal como salen de Kaggle: <strong>25 columnas</strong>, todo en texto. Las columnas marcadas se descartarán en el ETL.</p></div></div>
+            <div class="table-scroll" tabindex="0" role="region" aria-label="Vista previa del CSV extraído"><table id="previewRawTable"></table></div>
+            <p class="panel-caption preview-legend"><span class="tag tag-drop">Se descarta</span> contacto, dirección y columnas de calendario repetidas · el resto pasa al ETL. Por privacidad no se muestran los datos de contacto.</p>
+          </article>
           <p class="journey-aside"><strong>Referencias del proyecto.</strong> Además de los datos extraídos, <code>territory_regions.json</code> da nombre a los territorios comerciales y <code>reference_source.sql</code> agrupa los estados de los pedidos.</p>
           <details class="panel journey-evidence" id="extractionEvidence" hidden>
             <summary>Ver el registro de la extracción</summary>
@@ -187,6 +192,11 @@ python etl/extract_kaggle.py</code></pre>
                 <tr><td>Estado del pedido</td><td><code>Shipped</code></td><td>Shipped · grupo Cerrado según la referencia SQL</td></tr>
               </tbody>
             </table></div>
+          </article>
+          <article class="panel table-panel journey-example data-preview" id="previewProcessed">
+            <div class="panel-heading table-heading"><div><h4>Después del ETL: las mismas 8 líneas</h4><p>Quedan <strong>23 columnas</strong> en <code>fact_sales</code>. Cada línea de arriba es la misma línea de aquí.</p></div></div>
+            <div class="table-scroll" tabindex="0" role="region" aria-label="Vista previa de los datos después del ETL"><table id="previewProcessedTable"></table></div>
+            <p class="panel-caption preview-legend"><span class="tag tag-conv">Convertida</span> texto a fecha o número · <span class="tag tag-new">Nueva</span> campo calculado por el ETL · sin marca: el valor pasa igual, solo sin espacios sobrantes. Los valores vacíos (por ejemplo <code>ADDRESSLINE2</code>) no se rellenan.</p>
           </article>
           <article class="panel table-panel journey-example etl-clean">
             <div class="panel-heading table-heading"><div><h4>¿Qué limpia y transforma el ETL?</h4><p>Resumen de lo que hace <code>etl.py</code> con los datos antes de cargarlos.</p></div></div>

@@ -576,3 +576,20 @@ h1 em { background: linear-gradient(100deg, #4de3ff 10%, #b583ff 55%, #ff7eb6 95
 .etl-clean td:first-child { width: 150px; color: var(--mint); font: 12px var(--mono); }
 .etl-clean td:nth-child(2) { color: var(--soft); font-size: 13px; line-height: 1.6; }
 .etl-clean code { font: 12px var(--mono); color: #d9c8ff; }
+
+/* Vista previa de datos: extracción frente a ETL */
+.data-preview { margin-top: 13px; }
+.data-preview table { min-width: 1100px; }
+.data-preview th { white-space: nowrap; font: 11px var(--mono); }
+.data-preview td { white-space: nowrap; font-size: 12px; color: var(--soft); }
+.data-preview .col-drop { color: #ff9db4; background: rgba(255, 90, 130, .12); }
+.data-preview .col-new { color: #8fffd9; background: rgba(60, 230, 180, .13); }
+.data-preview .col-conv { color: #ffd98a; background: rgba(255, 200, 90, .12); }
+.data-preview .cell-drop { color: #ff9db4; font-style: italic; opacity: .7; background: rgba(255, 90, 130, .06); }
+.data-preview .cell-new { background: rgba(60, 230, 180, .07); color: #d4fff1; }
+.data-preview .cell-conv { background: rgba(255, 200, 90, .06); color: #fff1cf; }
+.data-preview .cell-empty { opacity: .55; font-style: italic; }
+.preview-legend .tag { display: inline-block; padding: 1px 8px; border-radius: 999px; font: 11px var(--mono); margin-right: 2px; }
+.preview-legend .tag-drop { background: rgba(255, 90, 130, .18); color: #ff9db4; }
+.preview-legend .tag-conv { background: rgba(255, 200, 90, .18); color: #ffd98a; }
+.preview-legend .tag-new { background: rgba(60, 230, 180, .18); color: #8fffd9; }

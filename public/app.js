@@ -580,6 +580,47 @@ function renderAnswers(data) {
   bindViewLinks($('#view-answers'));
 }
 
+async function loadDataPreview() {
+  try {
+    const r = await fetch('/evidence/data_preview.json');
+    if (!r.ok) throw new Error(r.status);
+    const d = await r.json();
+    const build = (id, cols, rows, mark) => {
+      const t = $(id);
+      if (!t) return;
+      t.textContent = '';
+      const head = t.createTHead().insertRow();
+      cols.forEach((c) => {
+        const th = document.createElement('th');
+        th.scope = 'col';
+        th.textContent = c;
+        const cls = mark(c);
+        if (cls) th.className = cls;
+        head.appendChild(th);
+      });
+      const body = t.createTBody();
+      rows.forEach((row) => {
+        const tr = body.insertRow();
+        row.forEach((v, i) => {
+          const td = tr.insertCell();
+          const cls = mark(cols[i]);
+          if (v === null) { td.textContent = 'descartada'; td.className = 'cell-drop'; return; }
+          td.textContent = v === '' ? '(vacío)' : String(v);
+          if (v === '') td.className = 'cell-empty';
+          else if (cls) td.className = cls.replace('col-', 'cell-');
+        });
+      });
+    };
+    const dropped = new Set(d.droppedColumns);
+    const created = new Set(d.newColumns);
+    const converted = new Set(d.convertedColumns);
+    build('#previewRawTable', d.rawColumns, d.raw, (c) => (dropped.has(c) ? 'col-drop' : ''));
+    build('#previewProcessedTable', d.processedColumns, d.processed, (c) => (created.has(c) ? 'col-new' : converted.has(c) ? 'col-conv' : ''));
+  } catch {
+    document.querySelectorAll('.data-preview').forEach((el) => { el.hidden = true; });
+  }
+}
+
 async function loadAnswers() {
   try {
     const response = await fetch('/api/dashboard');
@@ -645,6 +686,7 @@ async function init() {
     renderMethod(metadata, extraction);
     $('#loadingState').hidden = true;
     loadAnswers();
+    loadDataPreview();
     await loadDashboard();
   } catch (errorValue) {
     $('#loadingState').hidden = true;
