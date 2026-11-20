@@ -21,6 +21,25 @@ $env:RETAIL_DATA_DIR = 'C:\ruta\data\processed'
 npm start
 ```
 
+## Extracción y ETL (scraping + CSV, JSON y SQL)
+
+La carpeta `etl/` contiene el proceso completo que alimenta la web y Power BI. Requiere Python 3.10 o posterior.
+
+```powershell
+pip install -r etl/requirements.txt
+npm run etl:extract   # Scrapy: ficha de Kaggle, tablas M49 de la ONU y CSV de pedidos -> data/raw
+npm run etl:run       # ETL: valida, transforma y carga -> data/processed
+```
+
+| Script | Qué hace |
+|---|---|
+| `etl/extract_kaggle.py` | Spider de Scrapy (respeta `robots.txt`). Lee el bloque `ld+json` de Kaggle, las tablas M49 de la ONU en inglés y español, descarga el ZIP público (CC0) y extrae `sales_data_sample.csv`. Escribe `extraction_manifest.json` con las huellas SHA-256. Con `--publish-evidence` copia el manifiesto a `public/evidence` para que la web lo muestre. |
+| `etl/etl.py` | Cruza el **CSV** de pedidos, los **JSON** (M49, territorios comerciales y códigos ISO) y el **SQL** de clasificación de estados. Valida duplicados, campos obligatorios, cantidades y ventas, conversiones, integridad y llaves foráneas; carga `retail_sales.db`, genera `etl_summary.json`, `anova_results.json` y los CSV para Power BI (`data/processed/powerbi`). Si un control falla, aborta sin tocar los resultados anteriores. |
+| `etl/compare_processed.py` | Compara dos carpetas de resultados tabla por tabla, el resumen y el ANOVA. |
+| `etl/reference/` | Fuentes de referencia: `territory_regions.json`, `country_iso3.json` y `reference_source.sql`. |
+
+Verificación: se extrajo el CSV con el scraper (misma huella SHA-256 que el registro del proyecto, `6a20c7e5…`) y se corrió el ETL; `compare_processed.py` confirmó que las 8 tablas de SQLite, el resumen y el ANOVA coinciden con los resultados ya validados del equipo. Los datos crudos (`data/raw`) y los CSV de Power BI no se versionan: se regeneran con los comandos anteriores.
+
 ## Despliegue en Vercel
 
 El repositorio incluye `vercel.json`. Importa el repo en Vercel sin cambiar nada: `npm run vercel-build` compila Nest y copia Three.js a `public/vendor`; `public/` se sirve como estático y `/api/*` lo atiende la función `api/index.js`, que incluye `dist/` y `data/`. Usa Node 22.x (necesario para `node:sqlite`).
@@ -40,7 +59,7 @@ El repositorio incluye `vercel.json`. Importa el repo en Vercel sin cambiar nada
 | 9. Relación entre descuentos y volumen de compra | Cobertura parcial. Dispersión y correlación entre la brecha frente a MSRP y las unidades por línea. |
 | 10. Análisis ABC de clientes (ventas acumuladas) | Curva y tabla de todos los clientes filtrados, con cortes acumulados de 80 % y 95 %. |
 
-El recorrido incluye el registro de la ejecución de Scrapy y un ejemplo real de una línea de pedido antes y después del ETL. La web y Power BI consumen salidas del mismo ETL. Al actualizar los datos empaquetados, copia también `data/raw/extraction_manifest.json` del proyecto a `web/public/evidence/extraction_manifest.json`. La web muestra el registro si su huella coincide con la registrada en el resumen ETL.
+El recorrido incluye el registro de la ejecución de Scrapy y un ejemplo real de una línea de pedido antes y después del ETL. La web y Power BI consumen salidas del mismo ETL. Al actualizar los datos, ejecuta la extracción con `--publish-evidence` (o copia `data/raw/extraction_manifest.json` a `public/evidence/`). La web muestra el registro si su huella coincide con la registrada en el resumen ETL.
 
 ## Interpretación de datos
 
@@ -55,6 +74,7 @@ El recorrido incluye el registro de la ejecución de Scrapy y un ejemplo real de
 ## Estructura
 
 - `src/`: NestJS. `data/` (SQLite de solo lectura), `dashboard/` (`/api/meta`, `/api/dashboard` y cálculos), `main.ts` (arranque y estáticos; Three.js se sirve desde `node_modules`).
+- `etl/`: scraping con Scrapy y ETL en Python (ver la sección «Extracción y ETL»).
 - `public/3d/`: fondo, figura de cabecera y globo. Si WebGL no está disponible, la interfaz 2D sigue funcionando.
 - `public/`: interfaz, estilos, gráficos SVG e interacciones.
 - `data/processed/`: SQLite de lectura y resultados de ETL/ANOVA que alimentan la aplicación.

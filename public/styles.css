@@ -528,3 +528,11 @@ h1 em { background: linear-gradient(100deg, #4de3ff 10%, #b583ff 55%, #ff7eb6 95
 .country-chip button { border: 1px solid rgba(255, 126, 182, .55); border-radius: 999px; padding: 7px 14px; background: rgba(255, 126, 182, .14); color: #ffd3e6; font-size: 12px; cursor: pointer; transition: background .2s; }
 .country-chip button:hover { background: rgba(255, 126, 182, .3); }
 .country-chip[hidden] { display: none; }
+
+/* Bloques «Ejecutar desde el proyecto» (scraping y ETL) */
+.etl-code summary { color: var(--mint); cursor: pointer; font-size: 13px; }
+.etl-code p, .etl-code li { color: var(--soft); font-size: 13px; line-height: 1.65; }
+.etl-code code { font: 12px var(--mono); color: #d9c8ff; }
+.etl-cmd { margin: 10px 0; padding: 12px 14px; overflow-x: auto; border: 1px solid var(--line-strong); border-radius: 10px; background: rgba(5, 4, 22, .72); }
+.etl-cmd code { color: var(--mint); white-space: pre; text-shadow: none; }
+.etl-code a { color: var(--mint); font-size: 12px; }

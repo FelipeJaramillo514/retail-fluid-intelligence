@@ -162,6 +162,14 @@
             <p>La huella permite comprobar qué copia del CSV se usó en la carga.</p>
             <a href="/evidence/extraction_manifest.json">Abrir el manifiesto JSON</a>
           </details>
+          <details class="panel journey-evidence etl-code">
+            <summary>Ejecutar la extracción desde el proyecto</summary>
+            <p>El código del scraping está en <code>etl/extract_kaggle.py</code>, un spider de Scrapy. Respeta <code>robots.txt</code>, lee la ficha de Kaggle y las tablas M49 de la ONU, descarga el CSV de pedidos y escribe un manifiesto con las huellas SHA-256.</p>
+            <pre class="etl-cmd"><code>pip install -r etl/requirements.txt
+python etl/extract_kaggle.py</code></pre>
+            <p>Al repetir la extracción para verificarla, el CSV volvió a salir con la misma huella SHA-256 del registro de arriba.</p>
+            <a href="https://github.com/FelipeJaramillo514/retail-fluid-intelligence/blob/main/etl/extract_kaggle.py">Ver extract_kaggle.py</a>
+          </details>
           <a class="journey-next" href="#step-transform">Siguiente · Transformar los datos <span aria-hidden="true">↓</span></a>
         </section>
 
@@ -180,6 +188,17 @@
             </table></div>
           </article>
           <p class="journey-aside">También derivamos <code>discount_proxy</code> comparando el precio unitario con el MSRP. Este campo mide una brecha de precio y sirve para explorar su relación con las unidades compradas.</p>
+          <details class="panel journey-evidence etl-code">
+            <summary>Ejecutar el ETL desde el proyecto</summary>
+            <p><code>etl/etl.py</code> cruza tres tipos de fuente: el <strong>CSV</strong> de pedidos, los <strong>JSON</strong> (regiones M49 de la ONU, territorios comerciales y códigos ISO) y un script <strong>SQL</strong> con la clasificación de los estados. Después valida la calidad y carga <code>retail_sales.db</code> y los CSV para Power BI.</p>
+            <pre class="etl-cmd"><code>python etl/etl.py
+python etl/compare_processed.py data/processed &lt;carpeta-nueva&gt;</code></pre>
+            <ul class="method-list">
+              <li>Si falla un control (duplicados, ventas negativas, fechas inválidas, un país sin región M49…) el ETL se detiene y <strong>no modifica</strong> los resultados anteriores.</li>
+              <li>Con el CSV recién extraído, el ETL reproduce exactamente las tablas, el resumen y el ANOVA ya validados; <code>compare_processed.py</code> lo comprueba tabla por tabla.</li>
+            </ul>
+            <a href="https://github.com/FelipeJaramillo514/retail-fluid-intelligence/blob/main/etl/etl.py">Ver etl.py</a>
+          </details>
           <a class="journey-next" href="#step-load">Siguiente · Validar y cargar <span aria-hidden="true">↓</span></a>
         </section>
 
