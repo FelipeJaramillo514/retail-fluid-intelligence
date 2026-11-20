@@ -3,13 +3,18 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#0b1110">
+  <meta name="theme-color" content="#0a0a12">
   <meta name="description" content="Explorador local de ventas, clientes, productos y evidencia estadística del proyecto retail.">
   <title>Retail Fluid Intelligence</title>
   <link rel="stylesheet" href="/styles.css">
+  <script type="importmap">
+  { "imports": { "three": "/vendor/three/build/three.module.js", "three/addons/": "/vendor/three/examples/jsm/" } }
+  </script>
   <script src="/app.js" defer></script>
+  <script type="module" src="/3d/main.js"></script>
 </head>
 <body>
+  <canvas id="bg3d" class="bg3d" aria-hidden="true"></canvas>
   <svg class="svg-defs" aria-hidden="true" focusable="false">
     <filter id="liquid-warp">
       <feTurbulence type="fractalNoise" baseFrequency=".012" numOctaves="2" seed="7" result="noise">
@@ -18,12 +23,12 @@
       <feDisplacementMap in="SourceGraphic" in2="noise" scale="22" xChannelSelector="R" yChannelSelector="G"></feDisplacementMap>
     </filter>
     <linearGradient id="line-fill" x1="0" x2="0" y1="0" y2="1">
-      <stop offset="0" stop-color="#7ef0ce" stop-opacity=".24"></stop>
-      <stop offset="1" stop-color="#7ef0ce" stop-opacity="0"></stop>
+      <stop offset="0" stop-color="#82dff6" stop-opacity=".24"></stop>
+      <stop offset="1" stop-color="#82dff6" stop-opacity="0"></stop>
     </linearGradient>
     <linearGradient id="line-stroke" x1="0" x2="1">
-      <stop offset="0" stop-color="#7ef0ce"></stop>
-      <stop offset="1" stop-color="#9d9aff"></stop>
+      <stop offset="0" stop-color="#82dff6"></stop>
+      <stop offset="1" stop-color="#e19aff"></stop>
     </linearGradient>
   </svg>
 
@@ -347,6 +352,13 @@
         <header class="requirement-heading">
           <span class="requirement-number">08</span><div><h2 id="title-market" tabindex="-1">Mapa geográfico de ventas</h2><p>Sumamos ventas por país y las representamos con burbujas en ubicaciones aproximadas. Puedes seleccionar un país desde el mapa o la lista para explorar su información.</p><small class="powerbi-reference">En Power BI · Ventas y geografía</small></div>
         </header>
+        <article class="panel globe-panel">
+          <div class="panel-heading"><div><h3>Globo 3D de ventas</h3><p>Arrastra para girar y usa la rueda para acercar. Cada prisma es un país y su altura es proporcional a las ventas. Haz clic en uno para filtrarlo.</p></div><span class="panel-unit" id="globeCount">— países</span></div>
+          <div class="globe-stage">
+            <canvas id="globeCanvas" role="img" aria-label="Globo terráqueo 3D con prismas de ventas por país. El mapa y la lista de abajo ofrecen la misma información."></canvas>
+            <div class="globe-tip" id="globeTip" hidden></div>
+          </div>
+        </article>
         <div class="requirement-grid map-layout">
           <article class="panel map-panel">
             <div class="panel-heading"><div><h3>Ventas en los países de la selección</h3></div><span class="panel-unit" id="geoCount">— países</span></div>

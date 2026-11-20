@@ -18,6 +18,8 @@ const geo = {
   Switzerland: [8.2, 46.8], UK: [-2, 54], USA: [-98, 39],
 };
 
+window.__rfGeo = geo;
+
 function escapeHtml(value) {
   return String(value ?? '').replace(/[&<>"']/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]);
 }
@@ -205,7 +207,7 @@ function renderProductLineBars(items) {
 }
 
 function renderAbc(summary, data) {
-  const colors = { A: '#80dfbd', B: '#aaa0ff', C: '#e2af8d' };
+  const colors = { A: '#84d2e5', B: '#e3a0ff', C: '#e689ab' };
   const denominator = Math.max(data.summary.customers, 1);
   $('#abcTotal').textContent = `${fmt0.format(data.summary.customers)} CLIENTES`;
   $('#abcCards').innerHTML = summary.map((item) => `<article class="abc-card" style="--abc-color:${colors[item.key]}">
@@ -344,7 +346,7 @@ function renderMethod(meta, extraction) {
 }
 
 function emptyChart(message) {
-  return `<text x="50%" y="50%" text-anchor="middle" fill="#7f9188" font-family="var(--mono)" font-size="12">${escapeHtml(message)}</text>`;
+  return `<text x="50%" y="50%" text-anchor="middle" fill="#7a7c96" font-family="var(--mono)" font-size="12">${escapeHtml(message)}</text>`;
 }
 
 function renderSummary(data) {
@@ -374,6 +376,9 @@ function renderSummary(data) {
   renderProducts(data.topProducts);
   renderScatter(data.discountPoints, data.discountQuantityCorrelation);
   updateFilterContext();
+  // La capa 3D (globo) escucha este evento; si aún no cargó, lee el último estado.
+  window.__rfLastData = { countrySales: data.countrySales };
+  document.dispatchEvent(new CustomEvent('rf:data', { detail: window.__rfLastData }));
 }
 
 function updateFilterContext() {
@@ -483,6 +488,11 @@ async function init() {
     event.preventDefault();
     switchView(link.dataset.view, true);
   }));
+  document.addEventListener('rf:country', (event) => {
+    if ($('#countryFilter').disabled) return;
+    $('#countryFilter').value = event.detail.country;
+    loadDashboard();
+  });
   $('#countryBars').addEventListener('click', activateMapCountry);
   $('#geoMap').addEventListener('click', activateMapCountry);
   $('#geoMap').addEventListener('keydown', (event) => {
