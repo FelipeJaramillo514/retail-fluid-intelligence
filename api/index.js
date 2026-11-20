@@ -1,7 +1,7 @@
 'use strict';
 
-// Función serverless de Vercel: reutiliza la app Nest compilada en dist/.
-const { createApp } = require('../dist/app.factory');
+// Función serverless de Vercel: usa la app Nest empaquetada (dist/vercel.cjs, ver scripts/bundle.js).
+const { createApp } = require('../dist/vercel.cjs');
 
 let handler;
 

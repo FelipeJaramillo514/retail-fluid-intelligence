@@ -32,7 +32,11 @@ const FILTERABLE = new Set(['year', 'country', 'region', 'product_line']);
 /** Acceso de solo lectura al SQLite del ETL y a los JSON de resumen. */
 @Injectable()
 export class DataService implements OnModuleDestroy {
-  readonly root = path.resolve(__dirname, '..', '..');
+  // En desarrollo el código vive en dist/data; empaquetado (Vercel) queda en dist/. Se busca la
+  // carpeta que contiene data/processed en lugar de depender de la profundidad de __dirname.
+  readonly root = [process.cwd(), path.resolve(__dirname, '..'), path.resolve(__dirname, '..', '..')]
+    .find((dir) => fs.existsSync(path.join(dir, 'data', 'processed', 'retail_sales.db')))
+    ?? path.resolve(__dirname, '..', '..');
   readonly dataDir = path.resolve(process.env.RETAIL_DATA_DIR || path.join(this.root, 'data', 'processed'));
   readonly dbPath = path.join(this.dataDir, 'retail_sales.db');
   readonly db: DatabaseSync;
