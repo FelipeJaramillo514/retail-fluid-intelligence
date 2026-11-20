@@ -538,7 +538,7 @@ h1 em { background: linear-gradient(100deg, #4de3ff 10%, #b583ff 55%, #ff7eb6 95
 .etl-code a { color: var(--mint); font-size: 12px; }
 
 /* ====== Respuestas a las 10 preguntas ====== */
-.nav-answers { margin: 2px 0 6px; border-color: rgba(255, 126, 182, .28); background: linear-gradient(105deg, rgba(255, 126, 182, .12), rgba(197, 139, 255, .06)); }
+.nav-answers { min-height: 54px; align-items: center; margin: 2px 0 6px; border-color: rgba(255, 126, 182, .28); background: linear-gradient(105deg, rgba(255, 126, 182, .12), rgba(197, 139, 255, .06)); }
 .nav-answers .nav-number { color: var(--peach); font-size: 14px; }
 .nav-answers.active { box-shadow: inset 2px 0 0 var(--peach); }
 .answers-index { margin-bottom: 14px; }
