@@ -1,4 +1,6 @@
 node_modules/
+dist/
+*.tsbuildinfo
 npm-debug.log*
 .env
 .env.*
@@ -7,3 +9,5 @@ npm-debug.log*
 preview.png
 full_preview.png
 cdp-profile/
+.vercel/
+public/vendor/
