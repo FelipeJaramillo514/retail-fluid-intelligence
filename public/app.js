@@ -429,8 +429,8 @@ function switchView(view, toggleUrl = false) {
     else item.removeAttribute('aria-current');
   });
   document.querySelectorAll('.view-section').forEach((section) => section.classList.toggle('active', section === selected));
-  $('.filterbar').hidden = view === 'method';
-  $('#resetFilters').hidden = view === 'method';
+  $('.filterbar').hidden = view === 'method' || view === 'answers';
+  $('#resetFilters').hidden = view === 'method' || view === 'answers';
   updateAnalysisNavigation(view);
   $('#yearFilter').disabled = view === 'annual';
   updateFilterContext();
@@ -458,7 +458,8 @@ function updateAnalysisNavigation(view) {
   const nextLink = $('#nextAnalysis');
   previousLink.dataset.view = previous.dataset.view;
   previousLink.href = previous.href;
-  previousLink.textContent = index === 1 ? '← Recorrido del proyecto' : `← ${menuLabel(previous)}`;
+  previousLink.textContent = index === 1 ? '← Recorrido del proyecto'
+    : previous.dataset.view === 'answers' ? '← Respuestas a las 10 preguntas' : `← ${menuLabel(previous)}`;
   nextLink.hidden = !next;
   if (next) {
     nextLink.dataset.view = next.dataset.view;
@@ -477,6 +478,113 @@ function toggleCountry(country) {
   if (select.disabled) return;
   select.value = select.value === country ? '' : country;
   loadDashboard();
+}
+
+// ---------------------------------------------------------------------------------------------
+// Respuestas explícitas a las 10 preguntas del taller (calculadas con toda la muestra, sin filtros)
+// ---------------------------------------------------------------------------------------------
+const answerCatalog = [
+  { n: 1, view: 'overview', web: 'Total de ventas mensuales por país', q: 'Total de ventas mensuales por país',
+    pbi: [{ page: 'Ventas por mes y país', what: 'matriz de cada mes por país, con totales' }, { page: 'Ventas y geografía', what: 'gráfico de ventas mensuales' }] },
+  { n: 2, view: 'profit', web: 'Rentabilidad por categoría', q: 'Rentabilidad por categoría de producto', partial: true,
+    pbi: [{ page: 'Productos y precio', what: 'ventas por categoría (sin costos)' }] },
+  { n: 3, view: 'customers', web: 'Mayores clientes', q: 'Clientes con mayores ingresos generados',
+    pbi: [{ page: 'Clientes y ABC', what: 'clientes con mayores ventas' }] },
+  { n: 4, view: 'annual', web: 'Comparativa anual', q: 'Comparativa año a año de ventas',
+    pbi: [{ page: 'Evolución', what: 'ventas de enero a mayo por año y tabla comparativa' }] },
+  { n: 5, view: 'growth', web: 'Crecimiento mensual', q: 'Tasa de crecimiento mensual',
+    pbi: [{ page: 'Evolución', what: 'crecimiento frente al mes anterior' }] },
+  { n: 6, view: 'regions', web: 'Promedio por región', q: 'Promedio de ventas por región',
+    pbi: [{ page: 'Ventas y geografía', what: 'venta media por región comercial' }, { page: 'ETL y ANOVA', what: 'venta media por región M49' }] },
+  { n: 7, view: 'channels', web: 'Productos por canal', q: 'Productos más vendidos por canal', partial: true,
+    pbi: [{ page: 'Productos y precio', what: 'productos por unidades (sin canal)' }] },
+  { n: 8, view: 'market', web: 'Mapa de ventas', q: 'Mapa geográfico de ventas',
+    pbi: [{ page: 'Ventas y geografía', what: 'mapa de ventas por país' }] },
+  { n: 9, view: 'discount', web: 'Descuentos y volumen', q: 'Relación entre descuentos y volumen de compra', partial: true,
+    pbi: [{ page: 'Productos y precio', what: 'dispersión de la brecha frente a MSRP y las unidades' }] },
+  { n: 10, view: 'abc', web: 'Clientes ABC', q: 'Análisis ABC de clientes (ventas acumuladas)',
+    pbi: [{ page: 'Clientes y ABC', what: 'resumen ABC, curva acumulada y tabla de clasificación' }] },
+];
+
+function correlationStrength(r) {
+  const a = Math.abs(r);
+  return a < 0.1 ? 'casi nula' : a < 0.3 ? 'débil' : a < 0.6 ? 'moderada' : 'fuerte';
+}
+
+function buildAnswers(d) {
+  const total = d.summary.sales;
+  const share = (value) => fmtPct.format(total ? value / total : 0);
+  const name = (value) => `<strong>${escapeHtml(value)}</strong>`;
+  const money = (value) => `<strong>${fmt2.format(value)}</strong>`;
+  const months = d.monthly;
+  const bestMonth = months.reduce((best, item) => (item.sales > best.sales ? item : best), months[0]);
+  const topCountry = d.countrySales[0];
+  const lines = d.productLines;
+  const growthItems = d.monthlyGrowth.filter((item) => item.growth != null);
+  const bestGrowth = growthItems.reduce((best, item) => (item.growth > best.growth ? item : best), growthItems[0]);
+  const worstGrowth = growthItems.reduce((worst, item) => (item.growth < worst.growth ? item : worst), growthItems[0]);
+  const regions = d.regionSales;
+  const spread = regions.length > 1 ? regions[0].averagePerLine / regions.at(-1).averagePerLine - 1 : 0;
+  const top3 = d.countrySales.slice(0, 3);
+  const monthName = new Intl.DateTimeFormat('es-CO', { month: 'long', timeZone: 'UTC' })
+    .format(new Date(Date.UTC(2000, d.comparableThroughMonth - 1, 1)));
+  const abc = Object.fromEntries(d.abcSummary.map((item) => [item.key, item]));
+  const r = d.discountQuantityCorrelation;
+  const top = d.customers.slice(0, 3);
+  const annual = d.annualComparison.filter((item) => item.sales > 0);
+
+  return {
+    1: `En ${fmt0.format(months.length)} meses y ${fmt0.format(d.countrySales.length)} países se registraron ${money(total)} en ventas. El mes más alto fue ${name(monthLabel(bestMonth.key, true))} (${fmt2.format(bestMonth.sales)}) y el país con más ventas, ${name(topCountry.key)} (${fmt2.format(topCountry.sales)}; ${share(topCountry.sales)} del total). La tabla de esa sección desglosa cada mes por país.`,
+    2: `<strong>No se puede calcular la rentabilidad</strong>: la fuente no trae costos ni gastos, y sin costo no hay margen. Lo que sí se puede responder es qué categoría vende más: ${name(lines[0].key)} con ${fmt2.format(lines[0].sales)} (${share(lines[0].sales)} de las ventas)${lines[1] ? `, seguida de ${name(lines[1].key)} con ${fmt2.format(lines[1].sales)} (${share(lines[1].sales)})` : ''}.`,
+    3: `Los tres clientes que más ingresos generan son ${top.map((c) => `${name(c.key)} (${fmt2.format(c.sales)}; ${share(c.sales)})`).join(', ')}. Juntos aportan ${share(top.reduce((sum, c) => sum + c.sales, 0))} de las ventas.`,
+    4: `Comparando enero a ${monthName} de cada año: ${annual.map((item) => `${item.key} vendió ${fmt2.format(item.sales)}${item.growth == null ? '' : ` (${signedPercent(item.growth)} frente al año anterior)`}`).join('; ')}. Se comparan meses equivalentes porque el último año de la muestra termina en ${monthName}.`,
+    5: `El mayor crecimiento mensual fue en ${name(monthLabel(bestGrowth.key, true))} (${signedPercent(bestGrowth.growth)}) y la mayor caída en ${name(monthLabel(worstGrowth.key, true))} (${signedPercent(worstGrowth.growth)}). El último mes, ${name(monthLabel(d.summary.latestMonth, true))}, ${d.summary.mom == null ? 'no tiene mes anterior con qué compararse' : `varió ${signedPercent(d.summary.mom)} frente al mes anterior`}.`,
+    6: `Promedio de venta por línea de pedido: ${regions.map((item) => `${name(item.key)} ${fmt2.format(item.averagePerLine)}`).join('; ')}. La diferencia entre la región más alta y la más baja es de ${fmtPct.format(spread)}.`,
+    7: `<strong>No se puede calcular por canal</strong>: la fuente no trae el canal de venta. Lo que sí se puede responder es qué productos se venden más por unidades: ${d.topProducts.slice(0, 3).map((p) => `${name(p.key)} (${escapeHtml(p.productLine)}; ${fmt0.format(p.units)} unidades)`).join(', ')}.`,
+    8: `${name(topCountry.key)} concentra el ${share(topCountry.sales)} de las ventas (${fmt2.format(topCountry.sales)}). Los tres primeros países, ${top3.map((c) => escapeHtml(c.key)).join(', ')}, suman ${share(top3.reduce((sum, c) => sum + c.sales, 0))}.`,
+    9: r == null ? 'No hay observaciones suficientes para calcular la relación.' : `La correlación de Pearson entre la brecha frente al precio de lista (MSRP) y las unidades por línea es <strong>${fmt2.format(r)}</strong>: relación lineal ${correlationStrength(r)}. Esto describe asociación, no causa, y la brecha es una aproximación porque la fuente no registra descuentos promocionales.`,
+    10: `${name(`${fmt0.format(abc.A.customers)} clientes`)} (${fmtPct.format(abc.A.customers / d.summary.customers)}) forman la clase A y generan ${name(share(abc.A.sales))} de las ventas; ${fmt0.format(abc.B.customers)} clientes (${fmtPct.format(abc.B.customers / d.summary.customers)}) forman la clase B con ${share(abc.B.sales)}; y ${fmt0.format(abc.C.customers)} (${fmtPct.format(abc.C.customers / d.summary.customers)}) forman la clase C con ${share(abc.C.sales)}. La clase A llega hasta el 80 % acumulado, la B hasta el 95 % y la C es el resto.`,
+  };
+}
+
+function bindViewLinks(root) {
+  root.querySelectorAll('[data-view]').forEach((link) => link.addEventListener('click', (event) => {
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    event.preventDefault();
+    switchView(link.dataset.view, true);
+  }));
+}
+
+function renderAnswers(data) {
+  const answers = buildAnswers(data);
+  $('#answersIndex').innerHTML = answerCatalog.map((item) => `<tr>
+    <td>${String(item.n).padStart(2, '0')}</td>
+    <td><a href="#answer-${item.n}">${escapeHtml(item.q)}</a>${item.partial ? ' <span class="answer-chip">parcial</span>' : ''}</td>
+    <td><a data-view="${item.view}" href="?view=${item.view}">${escapeHtml(item.web)}</a></td>
+    <td>${item.pbi.map((p) => `«${escapeHtml(p.page)}»`).join(' · ')}</td>
+  </tr>`).join('');
+  $('#answersList').innerHTML = answerCatalog.map((item) => `<article class="panel answer-card${item.partial ? ' is-partial' : ''}" id="answer-${item.n}">
+    <header class="answer-head"><span class="requirement-number">${String(item.n).padStart(2, '0')}</span><h3>${escapeHtml(item.q)}</h3>${item.partial ? '<span class="answer-chip">Cobertura parcial</span>' : ''}</header>
+    <p class="answer-label">RESPUESTA</p>
+    <p class="answer-text">${answers[item.n]}</p>
+    <dl class="answer-where">
+      <div><dt>EN LA WEB</dt><dd><a data-view="${item.view}" href="?view=${item.view}">Punto ${String(item.n).padStart(2, '0')} · ${escapeHtml(item.web)} →</a></dd></div>
+      <div><dt>EN POWER BI</dt><dd>${item.pbi.map((p) => `Página «${escapeHtml(p.page)}» <span class="answer-detail">· ${escapeHtml(p.what)}</span>`).join('<br>')}</dd></div>
+    </dl>
+  </article>`).join('');
+  bindViewLinks($('#view-answers'));
+}
+
+async function loadAnswers() {
+  try {
+    const response = await fetch('/api/dashboard');
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'No se pudo calcular.');
+    renderAnswers(data);
+  } catch (error) {
+    $('#answersIndex').innerHTML = '<tr><td colspan="4">No se pudieron calcular las respuestas.</td></tr>';
+    $('#answersList').innerHTML = `<div class="error-state" role="alert">${escapeHtml(error.message)}</div>`;
+  }
 }
 
 function activateMapCountry(event) {
@@ -531,6 +639,7 @@ async function init() {
     $('#filterCount').textContent = `${fmt0.format(metadata.rows)} LÍNEAS DISPONIBLES`;
     renderMethod(metadata, extraction);
     $('#loadingState').hidden = true;
+    loadAnswers();
     await loadDashboard();
   } catch (errorValue) {
     $('#loadingState').hidden = true;

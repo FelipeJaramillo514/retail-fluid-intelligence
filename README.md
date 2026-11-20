@@ -46,6 +46,8 @@ El repositorio incluye `vercel.json`. Importa el repo en Vercel sin cambiar nada
 
 ## Requerimientos analíticos
 
+La sección **Respuestas a las 10 preguntas** (menú lateral, `?view=answers`) resume cada requerimiento con su respuesta explícita, calculada con toda la muestra, e indica en qué parte de la web y en qué página del informe de Power BI está el detalle.
+
 | Punto | Resultado en la web |
 |---|---|
 | 1. Total de ventas mensuales por país | Serie mensual filtrable y tabla con el desglose por mes y país. |

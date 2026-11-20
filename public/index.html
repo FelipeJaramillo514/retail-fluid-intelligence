@@ -46,6 +46,7 @@
       <div class="side-label">PROYECTO FINAL</div>
       <nav class="main-nav" aria-label="Recorrido del proyecto y requerimientos del taller">
         <a class="nav-item nav-method active" data-view="method" href="?view=method" aria-current="page"><span class="nav-number" aria-hidden="true">⌘</span><span>Inicio · Qué hicimos</span></a>
+        <a class="nav-item nav-answers" data-view="answers" href="?view=answers"><span class="nav-number" aria-hidden="true">★</span><span>Respuestas a las 10 preguntas</span></a>
         <a class="compact-results-link" data-view="overview" href="?view=overview">Ver los diez análisis →</a>
         <span class="nav-group-label">10 REQUERIMIENTOS ANALÍTICOS</span>
         <a class="nav-item" data-view="overview" href="?view=overview"><span class="nav-number">01</span><span>Ventas por mes y país</span></a>
@@ -268,8 +269,24 @@ python etl/compare_processed.py data/processed &lt;carpeta-nueva&gt;</code></pre
             <article><strong>Descuento</strong><p>Se muestra la brecha frente a MSRP, ya que la fuente no registra promociones aplicadas.</p></article>
             <article><strong>Moneda y alcance</strong><p>La moneda se desconoce. La muestra describe los pedidos de una compañía.</p></article>
           </div>
+          <a class="journey-action" data-view="answers" href="?view=answers">Ver las respuestas a las 10 preguntas <span aria-hidden="true">→</span></a>
           <a class="journey-action" data-view="overview" href="?view=overview">Ver el punto 1 · Ventas mensuales por país <span aria-hidden="true">→</span></a>
         </section>
+      </section>
+
+      <section class="view-section requirement-view" id="view-answers" aria-labelledby="title-answers">
+        <header class="requirement-heading">
+          <span class="requirement-number">★</span><div><h2 id="title-answers" tabindex="-1">Respuestas a las 10 preguntas del taller</h2><p>Cada pregunta tiene su respuesta explícita, calculada con todos los datos de la muestra (sin filtros), y se indica dónde encontrar el detalle: en esta web y en el informe de Power BI.</p></div>
+        </header>
+        <article class="panel table-panel answers-index">
+          <div class="panel-heading table-heading"><div><h3>Índice: dónde está cada respuesta</h3><p>Pulsa una pregunta para ver su respuesta, o el enlace de la web para abrir el análisis completo.</p></div></div>
+          <div class="table-scroll" tabindex="0" role="region" aria-label="Índice de respuestas"><table>
+            <thead><tr><th scope="col">N.º</th><th scope="col">PREGUNTA</th><th scope="col">EN LA WEB</th><th scope="col">EN POWER BI (PÁGINA)</th></tr></thead>
+            <tbody id="answersIndex"><tr><td colspan="4">Calculando…</td></tr></tbody>
+          </table></div>
+        </article>
+        <div id="answersList" class="answers-list" aria-live="polite"></div>
+        <p class="panel-caption answers-note">Las respuestas se calculan con la base SQLite completa y no cambian con los filtros. Los puntos 2, 7 y 9 tienen cobertura parcial porque la fuente no trae costos, canal de venta ni descuentos promocionales.</p>
       </section>
       <section class="view-section requirement-view" id="view-overview" aria-labelledby="title-overview">
         <header class="requirement-heading">

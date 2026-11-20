@@ -536,3 +536,36 @@ h1 em { background: linear-gradient(100deg, #4de3ff 10%, #b583ff 55%, #ff7eb6 95
 .etl-cmd { margin: 10px 0; padding: 12px 14px; overflow-x: auto; border: 1px solid var(--line-strong); border-radius: 10px; background: rgba(5, 4, 22, .72); }
 .etl-cmd code { color: var(--mint); white-space: pre; text-shadow: none; }
 .etl-code a { color: var(--mint); font-size: 12px; }
+
+/* ====== Respuestas a las 10 preguntas ====== */
+.nav-answers { margin: 2px 0 6px; border-color: rgba(255, 126, 182, .28); background: linear-gradient(105deg, rgba(255, 126, 182, .12), rgba(197, 139, 255, .06)); }
+.nav-answers .nav-number { color: var(--peach); font-size: 14px; }
+.nav-answers.active { box-shadow: inset 2px 0 0 var(--peach); }
+.answers-index { margin-bottom: 14px; }
+.answers-index table { min-width: 720px; }
+.answers-index td:first-child { color: var(--mint); font: 12px var(--mono); }
+.answers-index td a { color: var(--text); text-decoration: none; border-bottom: 1px dotted rgba(160, 200, 255, .45); }
+.answers-index td a:hover { color: var(--mint); border-bottom-color: var(--mint); }
+.answers-list { display: grid; gap: 13px; }
+.answer-card { padding: 18px 20px 16px; scroll-margin-top: 20px; }
+.answer-head { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 13px; align-items: center; margin-bottom: 12px; }
+.answer-head h3 { margin: 0; font-size: 17px; font-weight: 600; letter-spacing: -.02em; }
+.answer-chip { display: inline-block; padding: 3px 9px; border: 1px solid rgba(255, 126, 182, .5); border-radius: 999px; background: rgba(255, 126, 182, .12); color: #ffd3e6; font: 10px var(--mono); letter-spacing: .06em; white-space: nowrap; }
+.answer-label { margin: 0 0 4px; color: var(--mint); font: 10px var(--mono); letter-spacing: .14em; }
+.answer-text { margin: 0 0 14px; color: var(--text); font-size: 15px; line-height: 1.75; max-width: 110ch; }
+.answer-text strong { color: #fff; font-weight: 650; }
+.answer-card.is-partial { border-color: rgba(255, 126, 182, .3); }
+.answer-where { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 0; padding-top: 12px; border-top: 1px solid var(--line); }
+.answer-where dt { color: var(--muted); font: 10px var(--mono); letter-spacing: .12em; margin-bottom: 4px; }
+.answer-where dd { margin: 0; color: var(--soft); font-size: 13px; line-height: 1.6; }
+.answer-where a { color: var(--mint); text-decoration: none; }
+.answer-where a:hover { text-decoration: underline; }
+.answer-detail { color: var(--muted); }
+.answers-note { margin-top: 14px; }
+@media (max-width: 900px) { .nav-answers { grid-column: 1 / -1; } }
+@media (max-width: 620px) {
+  .answer-head { grid-template-columns: auto minmax(0, 1fr); }
+  .answer-head .answer-chip { grid-column: 1 / -1; justify-self: start; }
+  .answer-where { grid-template-columns: 1fr; }
+  .answer-text { font-size: 14px; }
+}
