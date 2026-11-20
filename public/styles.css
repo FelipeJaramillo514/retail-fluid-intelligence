@@ -401,3 +401,68 @@ h1 em { background: linear-gradient(100deg, #4de3ff 10%, #b583ff 55%, #ff7eb6 95
 .globe-tip span { color: var(--soft); font: 10px var(--mono); }
 .globe-stage:not(.ready)::after { content: 'Preparando el globo…'; position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); font: 11px var(--mono); }
 @media (max-width: 620px) { .globe-stage { height: 320px; } }
+
+/* ====== Legibilidad sobre las figuras 3D ====== */
+:root { --muted: #a9acd0; --soft: #cfd1ea; --text: #f4f4fb; }
+.bg3d { opacity: .55; }
+
+/* Paneles más sólidos: el vidrio se nota pero el texto manda. */
+:is(.panel, .kpi-card, .method-stage, .abc-card, .limit-card, .filterbar, .method-quality, .guide-strip) {
+  background: linear-gradient(150deg, rgba(26, 23, 70, .82), rgba(12, 10, 36, .78));
+}
+.kpi-primary { background: linear-gradient(128deg, rgba(30, 92, 140, .78), rgba(44, 26, 104, .76) 66%, rgba(100, 34, 112, .66)); }
+.sidebar { background: rgba(9, 8, 28, .86); }
+
+/* Texto suelto (fuera de paneles): se apoya en una placa translúcida. */
+:is(.requirement-heading, .journey-heading, .method-section-label, .section-heading, .journey-step > p,
+    .method-footnote, .intro-copy, .page-heading, .journey-index, .project-start > div > p) {
+  background: rgba(9, 8, 30, .66);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  border-radius: 12px;
+}
+.requirement-heading, .journey-heading { padding: 12px 14px; }
+.journey-step > p, .method-footnote, .method-section-label { padding: 10px 14px; }
+.intro-copy { padding: 14px 18px; }
+.journey-step { border-top-color: rgba(160, 190, 255, .22); }
+.main-content { text-shadow: 0 1px 10px rgba(6, 5, 24, .85); }
+.main-content :is(code, pre, input, select, option) { text-shadow: none; }
+
+/* Grises originales muy tenues → más claros. */
+.axis-label { fill: #aeb2d6; font-size: 10.5px; }
+.grid-line, .scatter-grid { stroke: rgba(190, 200, 255, .16); }
+.kpi-top, .kpi-bottom, .kpi-period, .panel-unit, .chart-foot, .map-foot, .scatter-stats, .section-meta,
+.filter-control > span, .filter-count, .filter-title, .breadcrumb, .live-indicator,
+.method-section-label, .method-period small, .method-anova-result small, .anova-metrics small,
+.limit-index, .limit-status, .sidebar-footer, .brand-copy small, .side-label, .nav-group-label { color: #b6b9dc; }
+.kpi-top, .kpi-period, .kpi-bottom { font-size: 10px; }
+.panel-unit, .filter-control > span, .filter-count, .scatter-stats, .map-foot, .chart-foot { font-size: 10px; }
+.panel-heading p, .panel-caption, .yoy-note, .definition-box p, .abc-method, .abc-rule small,
+.method-stage p, .method-card > p, .method-list, .method-note, .limit-card p, .anova-summary,
+.anova-limit, .method-boundaries p, .notice-strip span, .proxy-warning, .guide-strip { color: #d0d2ea; font-size: 12px; line-height: 1.6; }
+.method-stage p, .method-list, .method-boundaries p, .limit-card p { font-size: 12px; }
+.method-quality span, .method-tags span, .abc-card small, .product-line-name { color: #c2c5e6; font-size: 11px; }
+.formula-row pre, .formula-row > code, .method-stage code, .method-boundaries code { font-size: 11px; }
+.table-panel th { color: #c9cbe9; font-size: 10px; }
+.table-panel td { color: #dcdef2; font-size: 11px; }
+.table-panel td:first-child { color: #b9bce0; }
+.table-panel td:nth-child(n+4) { font-size: 11px; }
+.rank-label, .category-name, .region-name, .product-code { color: #e0e2f5; }
+.rank-value, .category-value, .region-average, .product-units { color: #eceefa; }
+.nav-item { color: #d4d6ee; font-size: 13px; }
+.nav-item.active { color: #fff; }
+.year-column .year-value, .year-column .year-label { color: #dcdef2; }
+.intro-copy p { color: #d0d2ea; font-size: 14px; }
+.footer-version, .page-footer { color: #b6b9dc; font-size: 10px; }
+.page-footer { background: rgba(9, 8, 30, .6); border-radius: 10px; padding: 12px 14px; }
+
+/* La figura de la cabecera nunca tapa los títulos. */
+.webgl-on .intro-orb { pointer-events: none; }
+.scatter-dot { fill-opacity: .55; stroke-opacity: .6; }
+.scatter-dot:nth-child(3n) { fill-opacity: .6; }
+.pareto-threshold { stroke: rgba(255, 224, 150, .6); }
+.abc-card em, .abc-card small { font-size: 11px; }
+.abc-card small { color: #c9cbea; }
+.map-label { fill: #f0f1fb; font-size: 10px; }
+.requirement-view .panel-heading p, .requirement-view .panel-caption { color: #d0d2ea; }
+.anova-metrics small, .method-anova-result small, .decision-chip { font-size: 10px; }
