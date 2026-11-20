@@ -1,0 +1,24 @@
+{
+  "_nota": "Nombre de país tal como aparece en el CSV de pedidos y su código ISO-alpha3 para cruzarlo con la tabla M49 de la ONU.",
+  "countries": {
+    "Australia": "AUS",
+    "Austria": "AUT",
+    "Belgium": "BEL",
+    "Canada": "CAN",
+    "Denmark": "DNK",
+    "Finland": "FIN",
+    "France": "FRA",
+    "Germany": "DEU",
+    "Ireland": "IRL",
+    "Italy": "ITA",
+    "Japan": "JPN",
+    "Norway": "NOR",
+    "Philippines": "PHL",
+    "Singapore": "SGP",
+    "Spain": "ESP",
+    "Sweden": "SWE",
+    "Switzerland": "CHE",
+    "UK": "GBR",
+    "USA": "USA"
+  }
+}

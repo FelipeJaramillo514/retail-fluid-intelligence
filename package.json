@@ -8,6 +8,9 @@
     "start": "nest build && node dist/main.js",
     "start:dev": "nest start --watch",
     "start:prod": "node dist/main.js",
+    "etl:extract": "python etl/extract_kaggle.py",
+    "etl:run": "python etl/etl.py",
+    "etl": "npm run etl:extract && npm run etl:run",
     "vercel-build": "nest build && node scripts/copy-vendor.js && node scripts/bundle.js"
   },
   "engines": {

@@ -11,3 +11,10 @@ full_preview.png
 cdp-profile/
 .vercel/
 public/vendor/
+
+# ETL
+data/raw/
+data/processed/powerbi/
+data/processed/.etl_*/
+__pycache__/
+*.pyc

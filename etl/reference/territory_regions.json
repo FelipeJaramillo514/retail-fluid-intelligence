@@ -1,0 +1,9 @@
+{
+  "_nota": "Territorio comercial del CSV (NA, EMEA, APAC, Japan) y su región de negocio.",
+  "territories": {
+    "APAC": "Asia-Pacífico",
+    "EMEA": "Europa, Oriente Medio y África",
+    "Japan": "Japón",
+    "NA": "Norteamérica"
+  }
+}
