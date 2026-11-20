@@ -26,6 +26,14 @@ const mime = {
 
 const etlSummary = JSON.parse(fs.readFileSync(path.join(DATA_DIR, 'etl_summary.json'), 'utf8'));
 const anovaResult = JSON.parse(fs.readFileSync(path.join(DATA_DIR, 'anova_results.json'), 'utf8'));
+const hasCountryDimension = Boolean(db.prepare(
+  "SELECT 1 FROM sqlite_schema WHERE type = 'table' AND name = 'dim_country'"
+).get());
+const m49Regions = hasCountryDimension
+  ? new Map(db.prepare('SELECT country, region_m49 FROM dim_country').all().map(
+      ({ country, region_m49 }) => [country, region_m49]
+    ))
+  : new Map();
 
 function distinctValues(column) {
   const allowed = new Set(['year', 'country', 'region', 'product_line']);
@@ -39,6 +47,7 @@ const metadata = {
   countries: distinctValues('country'),
   regions: distinctValues('region'),
   productLines: distinctValues('product_line'),
+  hasM49: hasCountryDimension,
   anova: anovaResult,
   limitations: {
     currency: 'La fuente no identifica la moneda.',
@@ -102,22 +111,54 @@ function dashboard(filters) {
   const totalOrders = new Set(rows.map((row) => row.order_number)).size;
   const monthRows = aggregateMap(rows, (row) => monthKey(row.order_date), (row) => ({ sales: row.sales, units: row.quantity }));
   monthRows.sort((a, b) => a.key.localeCompare(b.key));
-  const lastMonth = monthRows.at(-1) || null;
-  const priorMonth = lastMonth ? monthRows.find((item) => item.key === previousMonth(lastMonth.key)) : null;
-  const mom = priorMonth && priorMonth.sales !== 0 ? (lastMonth.sales - priorMonth.sales) / priorMonth.sales : null;
-
   const comparisonMonths = aggregateMap(comparisonRows, (row) => monthKey(row.order_date), (row) => ({ sales: row.sales }));
-  const latestComparable = lastMonth;
-  const priorYear = latestComparable ? comparisonMonths.find((item) => item.key === previousYearMonth(latestComparable.key)) : null;
-  const yoy = priorYear && priorYear.sales !== 0 ? (latestComparable.sales - priorYear.sales) / priorYear.sales : null;
+  const comparisonByMonth = new Map(comparisonMonths.map((item) => [item.key, item]));
+  const monthlyGrowth = monthRows.map((item) => {
+    const previousKey = previousMonth(item.key);
+    const previousSales = comparisonByMonth.get(previousKey)?.sales ?? null;
+    return { ...item, previousKey, previousSales,
+      growth: previousSales ? (item.sales - previousSales) / previousSales : null };
+  });
+  const lastMonth = monthRows.at(-1) || null;
+  const lastGrowth = monthlyGrowth.at(-1);
+  const priorMonth = lastMonth ? comparisonByMonth.get(previousMonth(lastMonth.key)) : null;
+  const priorYear = lastMonth ? comparisonByMonth.get(previousYearMonth(lastMonth.key)) : null;
+  const yoy = priorYear?.sales ? (lastMonth.sales - priorYear.sales) / priorYear.sales : null;
+
+  const monthlyByCountry = aggregateMap(rows,
+    (row) => `${monthKey(row.order_date)}|${row.country}`,
+    (row) => ({ sales: row.sales, units: row.quantity })
+  ).sort((a, b) => a.key.localeCompare(b.key)).map(({ key, sales, units, lines }) => ({
+    month: key.slice(0, 7), country: key.slice(8), sales, units, lines,
+  }));
 
   const yearly = aggregateMap(rows, (row) => row.year, (row) => ({ sales: row.sales, units: row.quantity }));
   yearly.sort((a, b) => Number(a.key) - Number(b.key));
+  // El último año de la muestra termina en mayo. Se compara el mismo tramo de calendario en cada año.
+  const comparableThroughMonth = Number(etlSummary.date_max.slice(5, 7));
+  const observedYears = new Map(aggregateMap(comparisonRows, (row) => row.year, (row) => ({ sales: row.sales }))
+    .map(({ key, sales }) => [key, sales]));
+  const comparableYears = new Map(aggregateMap(
+    comparisonRows.filter((row) => Number(row.order_date.slice(5, 7)) <= comparableThroughMonth),
+    (row) => row.year, (row) => ({ sales: row.sales })
+  ).map(({ key, sales }) => [key, sales]));
+  const annualComparison = metadata.years.map((year) => {
+    const periodSales = comparableYears.get(year) ?? 0;
+    const priorPeriodSales = comparableYears.get(year - 1);
+    return {
+      key: year, observedSales: observedYears.get(year) ?? 0, sales: periodSales,
+      growth: priorPeriodSales ? (periodSales - priorPeriodSales) / priorPeriodSales : null,
+    };
+  });
   const countrySales = aggregateMap(rows, (row) => row.country, (row) => ({ sales: row.sales, units: row.quantity }));
   countrySales.sort((a, b) => b.sales - a.sales);
   const regionSales = aggregateMap(rows, (row) => row.region, (row) => ({ sales: row.sales, units: row.quantity }));
   regionSales.forEach((item) => { item.averagePerLine = item.lines ? item.sales / item.lines : 0; });
   regionSales.sort((a, b) => b.averagePerLine - a.averagePerLine);
+  const m49RegionSales = aggregateMap(rows, (row) => m49Regions.get(row.country),
+    (row) => ({ sales: row.sales, units: row.quantity }))
+    .map((item) => ({ ...item, averagePerLine: item.sales / item.lines }))
+    .sort((a, b) => b.averagePerLine - a.averagePerLine);
   const productLines = aggregateMap(rows, (row) => row.product_line, (row) => ({ sales: row.sales, units: row.quantity }));
   productLines.sort((a, b) => b.sales - a.sales);
 
@@ -169,20 +210,26 @@ function dashboard(filters) {
       averagePerLine: rows.length ? totalSales / rows.length : 0,
       latestMonth: lastMonth?.key || null,
       latestMonthSales: lastMonth?.sales ?? null,
-      mom,
+      mom: lastGrowth?.growth ?? null,
       priorMonth: priorMonth?.key || null,
       yoy,
       priorYearMonth: priorYear?.key || null,
     },
     monthly: monthRows,
+    monthlyByCountry,
+    monthlyGrowth,
     yearly,
+    annualComparison,
+    comparableThroughMonth,
     countrySales,
     regionSales,
+    m49RegionSales,
     productLines,
     topProducts: products.slice(0, 10),
     customers: customerSales.slice(0, 20),
+    abcCustomers: customerSales,
     abcSummary,
-    pareto: customerSales.slice(0, 20).map(({ key, sales, cumulativePct, rank, abcClass }) => ({ customer: key, sales, cumulativePct, rank, abcClass })),
+    pareto: customerSales.map(({ key, sales, cumulativePct, rank, abcClass }) => ({ customer: key, sales, cumulativePct, rank, abcClass })),
     discountPoints,
     discountQuantityCorrelation,
   };

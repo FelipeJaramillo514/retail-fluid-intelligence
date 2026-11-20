@@ -39,5 +39,11 @@
   "alpha": 0.05,
   "decision": "Rechazar H0: al menos una media difiere",
   "null_hypothesis": "Las medias de ventas por linea de producto son iguales",
-  "limitations": "Las lineas dentro de la misma orden/cliente pueden no ser independientes; el dataset no permite inferencia causal. ANOVA omnibus no identifica que pares difieren."
+  "limitations": "Las lineas dentro de la misma orden/cliente pueden no ser independientes; el dataset no permite inferencia causal. ANOVA omnibus no identifica que pares difieren.",
+  "welch": {
+    "F": 27.027197388730333,
+    "df_between": 6,
+    "df_within": 660.7052128882207,
+    "p_value": 7.090814820582683e-29
+  }
 }

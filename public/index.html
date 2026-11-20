@@ -33,17 +33,26 @@
 
   <div class="app-shell">
     <aside class="sidebar">
-      <a class="brand" href="#overview" aria-label="Retail Fluid Intelligence, inicio">
+      <a class="brand" data-view="method" href="?view=method" aria-label="Retail Fluid Intelligence, inicio del recorrido">
         <span class="brand-mark"><span></span><span></span><span></span></span>
         <span class="brand-copy"><strong>R/F</strong><small>RETAIL INTELLIGENCE</small></span>
       </a>
 
-      <div class="side-label">ESPACIO DE TRABAJO</div>
-      <nav class="main-nav" aria-label="Secciones del tablero">
-        <button class="nav-item active" data-view="overview"><span class="nav-icon">◌</span><span>Resumen</span><kbd>01</kbd></button>
-        <button class="nav-item" data-view="customers"><span class="nav-icon">◉</span><span>Clientes & ABC</span><kbd>02</kbd></button>
-        <button class="nav-item" data-view="market"><span class="nav-icon">⌁</span><span>Mercado & ANOVA</span><kbd>03</kbd></button>
-        <button class="nav-item" data-view="method"><span class="nav-icon">⌘</span><span>Método</span><kbd>04</kbd></button>
+      <div class="side-label">PROYECTO FINAL</div>
+      <nav class="main-nav" aria-label="Recorrido del proyecto y requerimientos del taller">
+        <a class="nav-item nav-method active" data-view="method" href="?view=method" aria-current="page"><span class="nav-number" aria-hidden="true">⌘</span><span>Inicio · Qué hicimos</span></a>
+        <a class="compact-results-link" data-view="overview" href="?view=overview">Ver los diez análisis →</a>
+        <span class="nav-group-label">10 REQUERIMIENTOS ANALÍTICOS</span>
+        <a class="nav-item" data-view="overview" href="?view=overview"><span class="nav-number">01</span><span>Ventas por mes y país</span></a>
+        <a class="nav-item" data-view="profit" href="?view=profit"><span class="nav-number">02</span><span>Rentabilidad</span></a>
+        <a class="nav-item" data-view="customers" href="?view=customers"><span class="nav-number">03</span><span>Mayores clientes</span></a>
+        <a class="nav-item" data-view="annual" href="?view=annual"><span class="nav-number">04</span><span>Comparativa anual</span></a>
+        <a class="nav-item" data-view="growth" href="?view=growth"><span class="nav-number">05</span><span>Crecimiento mensual</span></a>
+        <a class="nav-item" data-view="regions" href="?view=regions"><span class="nav-number">06</span><span>Promedio por región</span></a>
+        <a class="nav-item" data-view="channels" href="?view=channels"><span class="nav-number">07</span><span>Productos por canal</span></a>
+        <a class="nav-item" data-view="market" href="?view=market"><span class="nav-number">08</span><span>Mapa de ventas</span></a>
+        <a class="nav-item" data-view="discount" href="?view=discount"><span class="nav-number">09</span><span>Descuentos y volumen</span></a>
+        <a class="nav-item" data-view="abc" href="?view=abc"><span class="nav-number">10</span><span>Clientes ABC</span></a>
       </nav>
 
       <div class="sidebar-spacer"></div>
@@ -63,7 +72,7 @@
         <div class="breadcrumb"><span>PROYECTO FINAL</span><span class="crumb-slash">/</span><strong>ANÁLISIS RETAIL</strong></div>
         <div class="topbar-right">
           <span class="live-indicator"><i></i> DATOS LOCALES</span>
-          <button class="icon-button" id="resetFilters" title="Limpiar filtros" aria-label="Limpiar filtros">↺</button>
+          <button class="icon-button" id="resetFilters" title="Limpiar filtros" aria-label="Limpiar filtros" hidden>↺</button>
           <div class="avatar" aria-label="Panel analítico">RF</div>
         </div>
       </header>
@@ -71,8 +80,8 @@
       <section class="intro-row">
         <div class="intro-copy">
           <div class="eyebrow"><span class="eyebrow-line"></span> RETAIL / ANALYTICS <span class="eyebrow-index">DATA STUDY 01</span></div>
-          <h1>Datos que <em>fluyen.</em></h1>
-          <p>Una lectura conectada del historial de ventas, sus clientes y sus productos.</p>
+          <h1>Análisis de <em>ventas retail.</em></h1>
+          <p>Del scraping y el ETL al informe de Power BI y los diez análisis del taller.</p>
         </div>
         <div class="intro-orb" aria-hidden="true">
           <div class="orb-ring ring-one"></div><div class="orb-ring ring-two"></div>
@@ -80,275 +89,311 @@
         </div>
       </section>
 
-      <section class="filterbar" aria-label="Filtros del tablero">
+      <section class="filterbar" aria-label="Filtros del tablero" hidden>
         <div class="filter-title"><span class="filter-glyph">⌘</span><span>FILTRAR VISTA</span><span class="filter-divider"></span></div>
         <label class="filter-control"><span>AÑO</span><select id="yearFilter"><option value="">Todos</option></select></label>
         <label class="filter-control"><span>PAÍS</span><select id="countryFilter"><option value="">Todos</option></select></label>
         <label class="filter-control"><span>REGIÓN</span><select id="regionFilter"><option value="">Todas</option></select></label>
         <label class="filter-control line-filter"><span>LÍNEA</span><select id="lineFilter"><option value="">Todas</option></select></label>
-        <div class="filter-count" id="filterCount">Cargando datos…</div>
+        <div class="filter-count" id="filterCount" aria-live="polite">Cargando datos…</div>
       </section>
 
       <div id="loadingState" class="loading-state"><span class="loading-orbit"></span><span>Abriendo el flujo de datos…</span></div>
-      <div id="errorState" class="error-state" hidden></div>
+      <div id="errorState" class="error-state" role="alert" hidden></div>
 
-      <section class="view-section active" id="view-overview">
-        <div class="kpi-grid">
-          <article class="kpi-card kpi-primary">
-            <div class="kpi-top"><span>VENTAS REGISTRADAS</span><span class="kpi-symbol">↗</span></div>
-            <div class="kpi-value" id="kpiSales">—</div>
-            <div class="kpi-bottom"><span>moneda no identificada</span><span class="kpi-period" id="kpiLines">— líneas</span></div>
-            <div class="kpi-glow"></div>
-          </article>
-          <article class="kpi-card">
-            <div class="kpi-top"><span>UNIDADES VENDIDAS</span><span class="kpi-symbol">⌁</span></div>
-            <div class="kpi-value" id="kpiUnits">—</div>
-            <div class="kpi-bottom"><span>cantidad transaccional</span><span class="kpi-period" id="kpiOrders">— pedidos</span></div>
-          </article>
-          <article class="kpi-card">
-            <div class="kpi-top"><span>CLIENTES ACTIVOS</span><span class="kpi-symbol">◉</span></div>
-            <div class="kpi-value" id="kpiCustomers">—</div>
-            <div class="kpi-bottom"><span>con ventas en la selección</span><span class="kpi-period">92 en total</span></div>
-          </article>
-          <article class="kpi-card kpi-growth">
-            <div class="kpi-top"><span>CAMBIO MENSUAL</span><span class="kpi-symbol">∿</span></div>
-            <div class="kpi-value" id="kpiMom">—</div>
-            <div class="kpi-bottom"><span id="momContext">últimos meses disponibles</span><span class="kpi-period" id="kpiYoy">YoY —</span></div>
-          </article>
-        </div>
-
-        <div class="section-heading">
-          <div><span class="section-kicker">01 / RITMO</span><h2>El pulso de las ventas</h2></div>
-          <div class="section-meta"><span class="meta-dot"></span><span id="latestMonthLabel">PERÍODO COMPLETO</span></div>
-        </div>
-
-        <div class="guide-strip"><strong>LECTURA</strong><span>La línea suma ventas por mes. El cambio mensual compara el último mes con el anterior; YoY compara ese mismo mes con el año previo. 2005 cubre solo parte del año. Los filtros actualizan las visualizaciones de ventas.</span></div>
-        <div class="overview-grid">
-          <article class="panel trend-panel">
-            <div class="panel-heading">
-              <div><h3>Ventas por mes</h3><p>Agregación de líneas de pedido según fecha</p></div>
-              <span class="panel-unit">VENTAS · MES</span>
-            </div>
-            <div class="chart-wrap trend-wrap"><svg id="trendChart" viewBox="0 0 900 290" role="img" aria-label="Gráfico de ventas por mes"></svg></div>
-            <div class="chart-foot"><span id="trendRange">—</span><span class="chart-legend"><i></i> Ventas</span></div>
-          </article>
-          <article class="panel yoy-panel">
-            <div class="panel-heading">
-              <div><h3>Comparativa anual</h3><p>Venta agregada por año · 2005 es parcial</p></div>
-              <span class="tiny-icon">◎</span>
-            </div>
-            <div id="yearBars" class="year-bars"></div>
-            <div class="yoy-note"><span class="note-orb">↗</span><span id="yoyContext">Comparación interanual del último mes disponible.</span></div>
-          </article>
-        </div>
-
-        <div class="overview-grid lower-grid">
-          <article class="panel country-panel">
-            <div class="panel-heading">
-              <div><h3>Países que impulsan el total</h3><p>Ventas acumuladas por país</p></div>
-              <span class="panel-unit">GEOGRAFÍA</span>
-            </div>
-            <div id="countryBars" class="rank-bars"></div>
-            <div class="panel-caption">Usa el filtro de país para consultar la curva mensual de una ubicación.</div>
-          </article>
-          <article class="panel category-panel">
-            <div class="panel-heading">
-              <div><h3>Mix por línea</h3><p>Ventas y unidades por línea de producto</p></div>
-              <span class="panel-unit">PRODUCTO</span>
-            </div>
-            <div id="lineBars" class="category-bars"></div>
-            <div class="panel-caption"><span class="dot-lime"></span> Venta bruta; no representa margen ni utilidad.</div>
-          </article>
-        </div>
-
-        <article class="notice-strip">
-          <span class="notice-icon">i</span><div><strong>Lectura responsable del dato</strong><span>El origen no documenta la moneda ni aporta costos, gastos o canales. Las cifras muestran ventas observadas, sin atribuir moneda ni rentabilidad.</span></div><button data-view-link="market">Ver límites del origen <span>↗</span></button>
+      <section class="view-section active" id="view-method" aria-labelledby="title-method">
+        <article class="method-summary panel project-start">
+          <div>
+            <span class="section-kicker">RECORRIDO DEL PROYECTO</span>
+            <h2 id="title-method" tabindex="-1">¿Qué hicimos?</h2>
+            <p>Construimos un flujo para analizar pedidos históricos de una empresa que vendía en varios países. Usamos Scrapy para recolectar información de la web, limpiamos y cruzamos los registros con Python, y usamos los datos resultantes para construir el informe de Power BI y esta web.</p>
+            <p>El objetivo fue entender cómo evolucionaron las ventas, dónde se concentraron y qué aportaron los clientes y las categorías de producto.</p>
+            <a class="journey-action" href="#step-extract">Empezar por la obtención de datos <span aria-hidden="true">↓</span></a>
+          </div>
+          <div class="method-period"><small>PERÍODO OBSERVADO</small><strong id="methodPeriod">—</strong><small>VENTAS REGISTRADAS · MONEDA SIN IDENTIFICAR</small><strong id="methodSales">—</strong><span id="methodScope">— líneas de pedido</span></div>
         </article>
+
+        <nav class="journey-index" aria-label="Etapas del proyecto">
+          <a href="#step-extract"><span>01</span> Obtención</a>
+          <a href="#step-transform"><span>02</span> Transformación</a>
+          <a href="#step-load"><span>03</span> Validación y carga</a>
+          <a href="#step-model"><span>04</span> Power BI y web</a>
+          <a href="#step-anova"><span>05</span> ANOVA</a>
+          <a href="#step-results"><span>06</span> Resultados</a>
+        </nav>
+
+        <section class="journey-step" id="step-extract" aria-labelledby="title-extract">
+          <header class="journey-heading"><span class="requirement-number">01</span><div><h3 id="title-extract">¿Cómo obtuvimos los datos?</h3><p>El spider de <code>extract_kaggle.py</code> hizo peticiones web, leyó el HTML y guardó los resultados de la extracción.</p></div></header>
+          <div class="journey-source-grid">
+            <article class="panel journey-card">
+              <h4>Kaggle · ficha del dataset y pedidos</h4>
+              <ol class="method-list">
+                <li>Scrapy abrió la página de Sample Sales Data y leyó el bloque de metadatos <code>application/ld+json</code> incrustado en el HTML.</li>
+                <li>De ese bloque obtuvo título, autor, licencia, versión y tamaño del ZIP publicado.</li>
+                <li>Descargó el ZIP de Kaggle, contrastó el tamaño anunciado y extrajo <code>sales_data_sample.csv</code>. Las líneas de pedido están en ese archivo.</li>
+              </ol>
+              <a href="https://www.kaggle.com/datasets/kyanyoga/sample-sales-data">Ver la ficha de Kaggle</a>
+            </article>
+            <article class="panel journey-card">
+              <h4>ONU · clasificación geográfica M49</h4>
+              <ol class="method-list">
+                <li>Scrapy recorrió las filas HTML de las tablas M49 en inglés y español.</li>
+                <li>Leyó las celdas con país, región, subregión y códigos ISO. Unió ambas tablas por ISO alfa-3 y guardó el resultado en <code>un_m49_countries.json</code>.</li>
+                <li>El ETL usó ese JSON para asignar una región geográfica a los países del CSV de ventas.</li>
+              </ol>
+              <a href="https://unstats.un.org/unsd/methodology/m49/overview/">Ver las tablas web de la ONU</a>
+            </article>
+          </div>
+          <p class="journey-aside"><strong>Referencias del proyecto.</strong> Además de los datos extraídos, <code>territory_regions.json</code> da nombre a los territorios comerciales y <code>reference_source.sql</code> agrupa los estados de los pedidos.</p>
+          <details class="panel journey-evidence" id="extractionEvidence" hidden>
+            <summary>Ver el registro de la extracción</summary>
+            <dl>
+              <dt>Herramienta</dt><dd id="evidenceExtractor"></dd>
+              <dt>Ficha de Kaggle</dt><dd id="evidenceDataset"></dd>
+              <dt>Entregables de Scrapy</dt><dd id="evidenceRows"></dd>
+              <dt>Fecha y hora en Colombia</dt><dd id="evidenceTime"></dd>
+              <dt>Huella SHA-256 del CSV</dt><dd><code id="evidenceHash"></code></dd>
+            </dl>
+            <p>La huella permite comprobar qué copia del CSV se usó en la carga.</p>
+            <a href="/evidence/extraction_manifest.json">Abrir el manifiesto JSON</a>
+          </details>
+          <a class="journey-next" href="#step-transform">Siguiente · Transformar los datos <span aria-hidden="true">↓</span></a>
+        </section>
+
+        <section class="journey-step" id="step-transform" aria-labelledby="title-transform">
+          <header class="journey-heading"><span class="requirement-number">02</span><div><h3 id="title-transform">¿Qué cambió con el ETL?</h3><p>En <code>etl.py</code> leímos el CSV, verificamos su estructura y conservamos una fila por línea de pedido. Pasamos fechas a un formato común y convertimos cantidades e importes a números para poder calcular los indicadores.</p></div></header>
+          <article class="panel table-panel journey-example">
+            <div class="panel-heading table-heading"><div><h4>Una línea real antes y después</h4><p>Pedido 10100 · línea 1 de la muestra del proyecto.</p></div></div>
+            <div class="table-scroll" tabindex="0" role="region" aria-label="Ejemplo real de transformación"><table>
+              <thead><tr><th scope="col">CAMPO</th><th scope="col">EN LA FUENTE</th><th scope="col">EN EL MODELO</th></tr></thead>
+              <tbody>
+                <tr><td>Fecha</td><td><code>1/6/2003 0:00</code> (mes/día/año)</td><td>2003-01-06 · periodo enero de 2003</td></tr>
+                <tr><td>Importe de la línea</td><td><code>1689.03</code></td><td>1.689,03 · valor decimal de ventas</td></tr>
+                <tr><td>País y territorio</td><td><code>USA</code> · <code>NA</code></td><td>USA · Norteamérica como región comercial · Américas en M49</td></tr>
+                <tr><td>Estado del pedido</td><td><code>Shipped</code></td><td>Shipped · grupo Cerrado según la referencia SQL</td></tr>
+              </tbody>
+            </table></div>
+          </article>
+          <p class="journey-aside">También derivamos <code>discount_proxy</code> comparando el precio unitario con el MSRP. Este campo mide una brecha de precio y sirve para explorar su relación con las unidades compradas.</p>
+          <a class="journey-next" href="#step-load">Siguiente · Validar y cargar <span aria-hidden="true">↓</span></a>
+        </section>
+
+        <section class="journey-step" id="step-load" aria-labelledby="title-load">
+          <header class="journey-heading"><span class="requirement-number">03</span><div><h3 id="title-load">¿Cómo validamos y cargamos los datos?</h3><p>Usamos el número de pedido y el número de línea como clave. Comparamos los recuentos y el total de ventas antes y después de la carga. Revisamos los campos obligatorios, las relaciones y la integridad de SQLite.</p></div></header>
+          <div class="method-quality-grid journey-quality">
+            <article class="method-quality"><strong id="methodRows">—</strong><span>líneas de pedido</span></article>
+            <article class="method-quality"><strong id="methodCustomers">—</strong><span>clientes</span></article>
+            <article class="method-quality"><strong id="methodProducts">—</strong><span>códigos de producto</span></article>
+            <article class="method-quality"><strong id="methodCountries">—</strong><span>países en ventas</span></article>
+            <article class="method-quality quality-pass" id="qualityCard" hidden><strong id="qualityChecks"></strong><span>claves duplicadas · campos obligatorios ausentes · relaciones huérfanas</span></article>
+          </div>
+          <div class="journey-source-grid">
+            <article class="panel journey-card"><h4>CSV procesados</h4><p>Exportamos las líneas de pedido y las tablas de referencia. Power Query lee estos archivos, promueve los encabezados y asigna los tipos que Power BI necesita.</p></article>
+            <article class="panel journey-card"><h4>SQLite</h4><p>Cargamos los hechos y las dimensiones en <code>retail_sales.db</code>. La web consulta esa base para recalcular los indicadores con los filtros.</p></article>
+          </div>
+          <p class="journey-aside" id="geographyReconciliation" hidden></p>
+          <a class="journey-next" href="#step-model">Siguiente · Usar los datos cargados <span aria-hidden="true">↓</span></a>
+        </section>
+
+        <section class="journey-step" id="step-model" aria-labelledby="title-model">
+          <header class="journey-heading"><span class="requirement-number">04</span><div><h3 id="title-model">¿Qué hicimos con los datos procesados?</h3><p>En Power BI conectamos <code>fact_sales</code> con las dimensiones. El calendario, el cliente, el producto, el territorio y el país permiten filtrar las mismas ventas desde distintas perspectivas.</p></div></header>
+          <article class="method-model panel">
+            <div class="method-model-copy"><h4>De una línea de pedido a un indicador</h4><p>Una línea guarda el importe y las unidades compradas. Si el informe filtra un país y un mes, la medida DAX suma solo las líneas que pertenecen a esa selección. Usamos la misma regla de cálculo en la web sobre SQLite.</p></div>
+            <div class="schema-diagram" aria-label="Esquema del modelo con calendario, cliente, producto y geografía conectados a fact_sales">
+              <div class="schema-dimension schema-top">Calendario<br><small>fecha · mes · año</small></div>
+              <div class="schema-dimension schema-left">dim_customer<br><small>cliente</small></div>
+              <div class="schema-fact">fact_sales<br><small>ventas · unidades · pedido</small></div>
+              <div class="schema-dimension schema-right">dim_product<br><small>producto · línea</small></div>
+              <div class="schema-dimension schema-bottom">dim_region · dim_country<br><small>territorio · país · M49</small></div>
+              <span class="schema-link link-top"></span><span class="schema-link link-left"></span><span class="schema-link link-right"></span><span class="schema-link link-bottom"></span>
+            </div>
+          </article>
+          <div class="method-two-col">
+            <article class="panel method-card">
+              <h4>Medidas DAX del informe</h4>
+              <div class="formula-row"><code>Ventas</code><pre>SUM(fact_sales[sales])</pre></div>
+              <div class="formula-row"><code>Crecimiento mensual</code><pre>(Ventas del mes − Ventas del mes previo) ÷ Ventas del mes previo</pre></div>
+              <div class="formula-row"><code>Clase ABC</code><pre>Acumulado ≤ 80 % → A · ≤ 95 % → B · resto → C</pre></div>
+              <p>El proyecto guarda las definiciones en <code>powerbi/medidas.dax</code>.</p>
+            </article>
+            <article class="panel method-card">
+              <h4>Cómo llegan los datos a esta web</h4>
+              <p>La API de Node.js lee SQLite en solo lectura, agrupa las filas según la selección y envía totales y otros indicadores al navegador. La interfaz los presenta como tablas y gráficos interactivos.</p>
+              <p>Por ejemplo, el punto 6 muestra el promedio por territorio comercial y por región M49. Así puedes ver dónde se usaron los datos de la ONU obtenidos mediante scraping.</p>
+            </article>
+          </div>
+          <a class="journey-next" href="#step-anova">Siguiente · Revisar el ANOVA <span aria-hidden="true">↓</span></a>
+        </section>
+
+        <section class="journey-step" id="step-anova" aria-labelledby="title-anova">
+          <header class="journey-heading"><span class="requirement-number">05</span><div><h3 id="title-anova">¿Qué comprobamos con ANOVA?</h3><p>Comparamos el importe promedio por línea de pedido entre las categorías de producto. La hipótesis inicial fue que todas las categorías tenían la misma media.</p></div></header>
+          <article class="method-anova panel">
+            <div><h4>ANOVA clásico de una vía</h4><p>Con un nivel de significación de 0,05, el resultado indica que al menos una media difiere.</p></div>
+            <div class="method-anova-result"><div><small>F</small><strong id="methodAnovaF">—</strong></div><div><small>p-VALOR</small><strong id="methodAnovaP">—</strong></div><div><small>HIPÓTESIS DE IGUALDAD</small><strong id="methodAnovaDecision">—</strong></div></div>
+            <p class="method-note" id="welchResult" hidden></p>
+            <p class="method-note">Las pruebas usan la muestra completa. Su resultado es exploratorio porque líneas de un mismo pedido o cliente pueden estar relacionadas. Para saber qué pares de categorías difieren se necesitarían comparaciones adicionales.</p>
+          </article>
+          <a class="journey-next" href="#step-results">Siguiente · Pasar a los requerimientos <span aria-hidden="true">↓</span></a>
+        </section>
+
+        <section class="journey-step" id="step-results" aria-labelledby="title-results">
+          <header class="journey-heading"><span class="requirement-number">06</span><div><h3 id="title-results">¿Qué resultados podemos mostrar?</h3><p>El menú incluye los diez requerimientos en el orden del taller. Cada uno explica su cálculo, muestra los resultados disponibles e indica la página correspondiente del informe de Power BI.</p></div></header>
+          <div class="method-boundaries">
+            <article><strong>Rentabilidad</strong><p>Se muestran ventas por categoría. Faltan costos para calcular el margen.</p></article>
+            <article><strong>Canal</strong><p>Se muestran unidades por producto. La fuente no identifica el canal comercial.</p></article>
+            <article><strong>Descuento</strong><p>Se muestra la brecha frente a MSRP, ya que la fuente no registra promociones aplicadas.</p></article>
+            <article><strong>Moneda y alcance</strong><p>La moneda se desconoce. La muestra describe los pedidos de una compañía.</p></article>
+          </div>
+          <a class="journey-action" data-view="overview" href="?view=overview">Ver el punto 1 · Ventas mensuales por país <span aria-hidden="true">→</span></a>
+        </section>
       </section>
-
-      <section class="view-section" id="view-customers">
-        <div class="section-heading page-heading">
-          <div><span class="section-kicker">02 / CONCENTRACIÓN</span><h2>El valor de cada relación</h2><p>Ranking y clasificación ABC recalculados para la selección actual.</p></div>
-          <div class="abc-total" id="abcTotal">92 CLIENTES</div>
+      <section class="view-section requirement-view" id="view-overview" aria-labelledby="title-overview">
+        <header class="requirement-heading">
+          <span class="requirement-number">01</span><div><h2 id="title-overview" tabindex="-1">Total de ventas mensuales por país</h2><p>Sumamos los importes de las líneas de pedido por mes y país. El gráfico muestra el total mensual de la selección. La tabla desglosa cada país. Selecciona uno en los filtros para ver su serie individual.</p><small class="powerbi-reference">En Power BI · Ventas y geografía</small></div>
+        </header>
+        <div class="kpi-grid requirement-kpis">
+          <article class="kpi-card kpi-primary"><div class="kpi-top">VENTAS REGISTRADAS</div><div class="kpi-value" id="kpiSales">—</div><div class="kpi-bottom">Moneda sin identificar</div></article>
+          <article class="kpi-card"><div class="kpi-top">UNIDADES VENDIDAS</div><div class="kpi-value" id="kpiUnits">—</div><div class="kpi-bottom" id="kpiOrders">— pedidos</div></article>
+          <article class="kpi-card"><div class="kpi-top">CLIENTES EN LA SELECCIÓN</div><div class="kpi-value" id="kpiCustomers">—</div><div class="kpi-bottom" id="kpiLines">— líneas de pedido</div></article>
         </div>
-
-        <div class="guide-strip"><strong>LECTURA</strong><span>El ranking ordena clientes por ventas dentro de la selección. La curva muestra qué porcentaje del total acumula el grupo de mayor venta; la clase ABC usa los cortes 80% y 95%.</span></div>
-        <div class="abc-summary-grid" id="abcCards"></div>
-        <div class="customers-grid">
-          <article class="panel pareto-panel">
-            <div class="panel-heading">
-              <div><h3>Curva de concentración</h3><p>Porcentaje acumulado de ventas por ranking</p></div>
-              <span class="panel-unit">PARETO · TOP 20</span>
-            </div>
-            <div class="chart-wrap pareto-wrap"><svg id="paretoChart" viewBox="0 0 900 320" role="img" aria-label="Curva acumulada de ventas de clientes"></svg></div>
-            <div class="chart-foot"><span>Clientes ordenados de mayor a menor venta</span><span class="chart-legend"><i class="legend-violet"></i> Acumulado</span></div>
-          </article>
-          <article class="panel abc-panel">
-            <div class="panel-heading">
-              <div><h3>Regla ABC</h3><p>Sobre venta acumulada en el contexto filtrado</p></div>
-            </div>
-            <div class="abc-rule"><span class="rule-mark rule-a">A</span><div><strong>Hasta 80%</strong><small>Concentración principal</small></div></div>
-            <div class="abc-rule"><span class="rule-mark rule-b">B</span><div><strong>Hasta 95%</strong><small>Concentración intermedia</small></div></div>
-            <div class="abc-rule"><span class="rule-mark rule-c">C</span><div><strong>Resto</strong><small>Cola de menor acumulación</small></div></div>
-            <div class="abc-method">La etiqueta sigue la medida DAX del proyecto: el cliente entra en A o B si su acumulado queda dentro del umbral correspondiente.</div>
-          </article>
-        </div>
-
+        <article class="panel trend-panel">
+          <div class="panel-heading"><div><h3>Serie mensual de la selección</h3><p>Los meses sin líneas quedan fuera de la serie.</p></div></div>
+          <div class="chart-wrap trend-wrap"><svg id="trendChart" viewBox="0 0 900 290" role="img" aria-label="Total de ventas de los países seleccionados por mes"></svg></div>
+          <div class="chart-foot"><span id="trendRange">—</span><span class="chart-legend"><i></i> Ventas</span></div>
+        </article>
         <article class="panel table-panel">
-          <div class="panel-heading table-heading">
-            <div><h3>Clientes con mayor ingreso generado</h3><p>Venta, ranking y porcentaje acumulado</p></div>
-            <span class="panel-unit">TOP 20</span>
+          <div class="panel-heading table-heading"><div><h3>Detalle mensual por país</h3><p>Una fila por cada combinación observada de mes y país.</p></div></div>
+          <div class="table-scroll table-scroll-limited" tabindex="0" role="region" aria-label="Detalle mensual por país">
+            <table><thead><tr><th scope="col">MES</th><th scope="col">PAÍS</th><th scope="col">LÍNEAS</th><th scope="col">UNIDADES</th><th scope="col">VENTAS</th></tr></thead><tbody id="monthlyCountryTable"></tbody></table>
           </div>
-          <div class="table-scroll"><table>
-            <thead><tr><th>#</th><th>CLIENTE</th><th>CLASE</th><th>VENTAS</th><th>ACUMULADO</th><th>PARTICIPACIÓN</th></tr></thead>
-            <tbody id="customerTable"></tbody>
-          </table></div>
         </article>
       </section>
 
-      <section class="view-section" id="view-market">
-        <div class="section-heading page-heading">
-          <div><span class="section-kicker">03 / MERCADO & EVIDENCIA</span><h2>Territorio, producto y contraste</h2><p>Una vista de exploración para geografía, volumen y evidencia estadística.</p></div>
-          <div class="stat-signature"><span>F</span><span>ANOVA / 1 VÍA</span></div>
-        </div>
+      <section class="view-section requirement-view" id="view-profit" aria-labelledby="title-profit">
+        <header class="requirement-heading">
+          <span class="requirement-number">02</span><div><h2 id="title-profit" tabindex="-1">Rentabilidad por categoría de producto</h2><p>El margen bruto se calcula restando el costo de los productos vendidos a las ventas. El dataset aporta el importe de venta y la categoría, pero carece del costo aplicable a cada producto.</p><small class="powerbi-reference">En Power BI · Productos y precio</small></div>
+        </header>
+        <div class="requirement-limit"><strong>Cobertura parcial</strong><p>Faltan los costos para calcular margen bruto. La utilidad neta también requeriría los gastos.</p></div>
+        <article class="panel category-panel">
+          <div class="panel-heading"><div><h3>Ventas registradas por categoría</h3><p>Sumamos ventas por línea de producto. Cada barra muestra la facturación observada.</p></div></div>
+          <div id="lineBars" class="category-bars"></div>
+        </article>
+      </section>
 
-        <div class="guide-strip"><strong>LECTURA</strong><span>El mapa compara ventas por país en centroides aproximados. El promedio es por línea transaccional, no por cliente ni por mes. La dispersión usa una brecha de precio frente a MSRP como proxy.</span></div>
-        <div class="market-grid">
+      <section class="view-section requirement-view" id="view-customers" aria-labelledby="title-customers">
+        <header class="requirement-heading">
+          <span class="requirement-number">03</span><div><h2 id="title-customers" tabindex="-1">Clientes con mayores ingresos generados</h2><p>Sumamos las ventas de todas las líneas de cada cliente y las ordenamos de mayor a menor en la selección actual. Los clientes con el mismo importe comparten posición.</p><small class="powerbi-reference">En Power BI · Clientes y ABC</small></div>
+        </header>
+        <article class="panel country-panel">
+          <div class="panel-heading"><div><h3>Los primeros 10 clientes por ventas</h3><p>Importes en la moneda sin identificar de la fuente.</p></div></div>
+          <div id="customerBars" class="rank-bars"></div>
+        </article>
+        <article class="panel table-panel">
+          <div class="panel-heading table-heading"><div><h3>Ranking de ingresos</h3><p>Los primeros 20 clientes de la selección y su peso sobre el total.</p></div></div>
+          <div class="table-scroll"><table><thead><tr><th scope="col">PUESTO</th><th scope="col">CLIENTE</th><th scope="col">VENTAS</th><th scope="col">% DEL TOTAL</th></tr></thead><tbody id="topCustomerTable"></tbody></table></div>
+        </article>
+      </section>
+
+      <section class="view-section requirement-view" id="view-annual" aria-labelledby="title-annual">
+        <header class="requirement-heading">
+          <span class="requirement-number">04</span><div><h2 id="title-annual" tabindex="-1">Comparativa año a año de ventas</h2><p>El último año de la muestra termina en mayo de 2005. Comparamos de enero a mayo en cada año y mostramos también los totales observados. Se conservan todos los años de referencia y se aplican los filtros de país, región y línea.</p><small class="powerbi-reference">En Power BI · Evolución</small></div>
+        </header>
+        <article class="panel yoy-panel">
+          <div class="panel-heading"><div><h3>Ventas para meses equivalentes</h3><p id="annualPeriod">Enero a mayo de cada año de la muestra</p></div></div>
+          <div id="yearBars" class="year-bars"></div>
+        </article>
+        <article class="panel table-panel">
+          <div class="panel-heading table-heading"><div><h3>Totales y variación frente al año anterior</h3><p>La variación se calcula sobre los meses equivalentes. Si falta una base positiva, se indica como «Sin base».</p></div></div>
+          <div class="table-scroll"><table><thead><tr><th scope="col">AÑO</th><th scope="col">VENTAS OBSERVADAS</th><th scope="col">VENTAS EN MESES EQUIVALENTES</th><th scope="col">CRECIMIENTO INTERANUAL</th></tr></thead><tbody id="annualTable"></tbody></table></div>
+        </article>
+      </section>
+
+      <section class="view-section requirement-view" id="view-growth" aria-labelledby="title-growth">
+        <header class="requirement-heading">
+          <span class="requirement-number">05</span><div><h2 id="title-growth" tabindex="-1">Tasa de crecimiento mensual</h2><p>Restamos las ventas del mes calendario anterior a las del mes actual y dividimos la diferencia por las ventas del mes anterior. Si no hay una base positiva, el mes queda sin tasa. Enero puede usar diciembre del año anterior.</p><small class="powerbi-reference">En Power BI · Evolución</small></div>
+        </header>
+        <article class="panel trend-panel">
+          <div class="panel-heading"><div><h3>Variación mensual de ventas</h3><p>Las barras muestran subidas y caídas respecto al mes anterior.</p></div></div>
+          <div class="chart-wrap trend-wrap"><svg id="growthChart" viewBox="0 0 900 290" role="img" aria-label="Barras de crecimiento mensual con eje cero"></svg></div>
+        </article>
+        <article class="panel table-panel">
+          <div class="panel-heading table-heading"><div><h3>Mes actual y mes de referencia</h3></div></div>
+          <div class="table-scroll table-scroll-limited" tabindex="0" role="region" aria-label="Detalle del crecimiento mensual"><table><thead><tr><th scope="col">MES</th><th scope="col">VENTAS DEL MES</th><th scope="col">MES ANTERIOR</th><th scope="col">VENTAS DEL MES ANTERIOR</th><th scope="col">VARIACIÓN</th></tr></thead><tbody id="growthTable"></tbody></table></div>
+        </article>
+      </section>
+
+      <section class="view-section requirement-view" id="view-regions" aria-labelledby="title-regions">
+        <header class="requirement-heading">
+          <span class="requirement-number">06</span><div><h2 id="title-regions" tabindex="-1">Promedio de ventas por región</h2><p>Dividimos las ventas de cada grupo entre sus líneas de pedido. El territorio comercial viene de los pedidos. La región M49 viene de la clasificación geográfica de la ONU extraída con Scrapy.</p><small class="powerbi-reference">En Power BI · Ventas y geografía · ETL y ANOVA</small></div>
+        </header>
+        <div class="requirement-grid">
+          <article class="panel region-panel"><div class="panel-heading"><div><h3>Por territorio comercial</h3><p>Media por línea de pedido.</p></div></div><div id="regionBars" class="region-bars"></div></article>
+          <article class="panel region-panel" id="m49Panel"><div class="panel-heading"><div><h3>Por región geográfica M49</h3><p>Media por línea de pedido. <a href="https://unstats.un.org/unsd/methodology/m49/overview/">Clasificación de la ONU</a></p></div></div><div id="m49RegionBars" class="region-bars"></div></article>
+        </div>
+      </section>
+
+      <section class="view-section requirement-view" id="view-channels" aria-labelledby="title-channels">
+        <header class="requirement-heading">
+          <span class="requirement-number">07</span><div><h2 id="title-channels" tabindex="-1">Productos más vendidos por canal</h2><p>Para construir este ranking se necesita el canal comercial de cada pedido, como tienda física, web o distribuidor.</p><small class="powerbi-reference">En Power BI · Productos y precio</small></div>
+        </header>
+        <div class="requirement-limit"><strong>Cobertura parcial</strong><p>El CSV carece del campo canal. El ranking disponible agrega las unidades de cada código de producto dentro de la selección.</p></div>
+        <article class="panel products-panel">
+          <div class="panel-heading"><div><h3>Los primeros 10 productos por unidades totales</h3><p>Se muestra el código y la categoría de cada producto.</p></div></div>
+          <div id="productBars" class="product-bars"></div>
+        </article>
+      </section>
+
+      <section class="view-section requirement-view" id="view-market" aria-labelledby="title-market">
+        <header class="requirement-heading">
+          <span class="requirement-number">08</span><div><h2 id="title-market" tabindex="-1">Mapa geográfico de ventas</h2><p>Sumamos ventas por país y las representamos con burbujas en ubicaciones aproximadas. Puedes seleccionar un país desde el mapa o la lista para explorar su información.</p><small class="powerbi-reference">En Power BI · Ventas y geografía</small></div>
+        </header>
+        <div class="requirement-grid map-layout">
           <article class="panel map-panel">
-            <div class="panel-heading">
-              <div><h3>Huella geográfica</h3><p>Ventas agregadas por país</p></div>
-              <span class="panel-unit" id="geoCount">— PAÍSES</span>
-            </div>
-            <div class="map-wrap"><svg id="geoMap" viewBox="0 0 900 390" role="img" aria-label="Mapa de burbujas de ventas por país"></svg></div>
-            <div class="map-foot"><span><i class="map-dot"></i> Tamaño del punto ∝ ventas</span><span>Centroides aproximados · posiciones ilustrativas</span></div>
+            <div class="panel-heading"><div><h3>Ventas en los países de la selección</h3></div><span class="panel-unit" id="geoCount">— países</span></div>
+            <div class="map-wrap"><svg id="geoMap" viewBox="0 0 900 390" role="group" aria-label="Mapa interactivo de ventas por país"></svg></div>
+            <div class="map-foot"><span><i class="map-dot"></i> Burbujas mayores para ventas mayores</span><span>Base cartográfica <a href="https://www.naturalearthdata.com/">Natural Earth</a></span></div>
           </article>
-          <article class="panel region-panel">
-            <div class="panel-heading">
-              <div><h3>Promedio por región</h3><p>Venta promedio por línea de pedido</p></div>
-              <span class="panel-unit">MEDIA</span>
-            </div>
-            <div id="regionBars" class="region-bars"></div>
-            <div class="definition-box"><span>∑</span><p><strong>Definición</strong> promedio aritmético de ventas de cada línea transaccional agrupada por región.</p></div>
+          <article class="panel country-panel">
+            <div class="panel-heading"><div><h3>Totales por país</h3><p>Selecciona un país para filtrarlo.</p></div></div>
+            <div id="countryBars" class="rank-bars country-list"></div>
           </article>
-        </div>
-
-        <div class="market-grid product-grid">
-          <article class="panel products-panel">
-            <div class="panel-heading">
-              <div><h3>Productos más vendidos</h3><p>Ordenados por unidades del código de producto</p></div>
-              <span class="panel-unit">TOP 10</span>
-            </div>
-            <div id="productBars" class="product-bars"></div>
-            <div class="panel-caption">El origen no contiene canal de venta; no se sustituye por territorio.</div>
-          </article>
-          <article class="panel scatter-panel">
-            <div class="panel-heading">
-              <div><h3>Precio de referencia & volumen</h3><p>Proxy MSRP frente a cantidad de línea</p></div>
-              <span class="panel-unit">EXPLORACIÓN</span>
-            </div>
-            <div class="chart-wrap scatter-wrap"><svg id="scatterChart" viewBox="0 0 720 290" role="img" aria-label="Relación entre proxy de brecha MSRP y cantidad"></svg></div>
-            <div class="scatter-stats"><span id="scatterCorrelation">Correlación: —</span><span id="scatterN">n = — líneas</span></div>
-            <div class="proxy-warning">Proxy de brecha MSRP; no es un descuento promocional observado.</div>
-          </article>
-        </div>
-
-        <article class="anova-panel panel">
-          <div class="anova-side"><span class="anova-orbit">F</span><span class="panel-unit">PRUEBA ÓMNIBUS</span></div>
-          <div class="anova-main">
-            <div class="anova-heading"><div><span class="section-kicker">ANÁLISIS ESTADÍSTICO</span><h3>ANOVA de una vía · ventas por línea de producto</h3></div><span class="decision-chip" id="anovaDecision">—</span></div>
-            <div class="anova-metrics"><div><small>ESTADÍSTICO F</small><strong id="anovaF">—</strong></div><div><small>p-VALOR</small><strong id="anovaP">—</strong></div><div><small>GRADOS DE LIBERTAD</small><strong id="anovaDf">—</strong></div><div><small>α</small><strong id="anovaAlpha">—</strong></div></div>
-            <p class="anova-summary" id="anovaSummary">—</p>
-            <p class="anova-limit">Una línea de pedido es la unidad observacional; líneas de la misma orden o cliente pueden estar correlacionadas. El resultado no es causal ni identifica qué pares de líneas difieren.</p>
-          </div>
-        </article>
-
-        <div class="limits-grid">
-          <article class="limit-card"><span class="limit-index">LÍMITE 01</span><strong>Rentabilidad no estimable</strong><p>Sin costos ni gastos no se calcula utilidad. Ventas por línea no equivalen a margen.</p><span class="limit-status">CAMPO AUSENTE</span></article>
-          <article class="limit-card"><span class="limit-index">LÍMITE 02</span><strong>Canal no disponible</strong><p>No existe canal de venta en el origen. Territorio y región son dimensiones geográficas.</p><span class="limit-status">CAMPO AUSENTE</span></article>
-          <article class="limit-card"><span class="limit-index">LÍMITE 03</span><strong>Moneda sin documentar</strong><p>Los importes se muestran sin símbolo monetario para no atribuir una divisa no confirmada.</p><span class="limit-status">METADATO AUSENTE</span></article>
         </div>
       </section>
 
-      <section class="view-section" id="view-method">
-        <div class="section-heading page-heading method-heading">
-          <div><span class="section-kicker">04 / CÓMO SE CONSTRUYÓ</span><h2>Del dato a la lectura</h2><p>El recorrido técnico, las reglas de cálculo y la forma correcta de interpretar este tablero.</p></div>
-          <div class="stat-signature"><span>ETL</span><span>TRAZABILIDAD</span></div>
-        </div>
-
-        <article class="method-summary panel">
-          <div><span class="section-kicker">OBJETIVO</span><h3>Entender qué impulsa las ventas y cómo se distribuye su valor.</h3><p>Usamos una muestra histórica de pedidos para describir ventas, clientes, productos y geografías. Cada cifra proviene del dataset procesado; las categorías ausentes se declaran como límites en vez de estimarse.</p></div>
-          <div class="method-period"><small>PERÍODO OBSERVADO</small><strong id="methodPeriod">—</strong><small>VENTAS REGISTRADAS · MONEDA NO IDENTIFICADA</small><strong id="methodSales">—</strong><span id="methodScope">— filas de venta</span></div>
+      <section class="view-section requirement-view" id="view-discount" aria-labelledby="title-discount">
+        <header class="requirement-heading">
+          <span class="requirement-number">09</span><div><h2 id="title-discount" tabindex="-1">Relación entre descuentos y volumen de compra</h2><p>Cada punto del gráfico representa una línea de pedido. El eje horizontal muestra la brecha respecto al precio de referencia MSRP. El eje vertical muestra las unidades compradas.</p><small class="powerbi-reference">En Power BI · Productos y precio</small></div>
+        </header>
+        <div class="requirement-limit"><strong>Cobertura parcial</strong><p>El dataset carece de descuentos promocionales observados. Usamos la brecha como aproximación y calculamos el máximo entre cero y (MSRP − precio unitario) ÷ MSRP. La correlación describe asociación.</p></div>
+        <article class="panel scatter-panel">
+          <div class="panel-heading"><div><h3>Brecha frente a MSRP y unidades compradas</h3><p>Solo se incluyen líneas con brecha calculable.</p></div></div>
+          <div class="chart-wrap scatter-wrap"><svg id="scatterChart" viewBox="0 0 720 290" role="img" aria-label="Dispersión entre brecha respecto a MSRP y unidades compradas"></svg></div>
+          <div class="scatter-stats"><span id="scatterCorrelation">—</span><span id="scatterN">—</span></div>
         </article>
-
-        <div class="method-section-label"><span class="section-kicker">01 / PROCESO ETL</span><span>EXTRAER → TRANSFORMAR → CARGAR → SERVIR</span></div>
-        <div class="etl-flow">
-          <article class="method-stage"><span class="method-stepno">01</span><span class="method-stage-label">EXTRAER</span><h3>Tres fuentes</h3><p><strong>CSV</strong> aporta las líneas de venta. El <strong>JSON</strong> mapea territorios a regiones y el <strong>SQL</strong> contiene equivalencias de estados. Las referencias enriquecen el análisis; no son transacciones adicionales.</p><div class="method-tags"><span>sales_data_sample.csv</span><span>territory_regions.json</span><span>reference_source.sql</span></div></article>
-          <article class="method-stage"><span class="method-stepno">02</span><span class="method-stage-label">TRANSFORMAR</span><h3>Limpiar y derivar</h3><p>Python conserva una fila por línea de pedido, identificada por <code>order_number + order_line_number</code>, convierte fechas a ISO y agrega período, región y <code>discount_proxy</code>. En Power Query M se promueven encabezados y se interpretan importes con cultura <code>es-CO</code>.</p><div class="method-tags"><span>tipos consistentes</span><span>claves verificadas</span></div></article>
-          <article class="method-stage"><span class="method-stepno">03</span><span class="method-stage-label">CARGAR</span><h3>Modelo analítico</h3><p>El proceso escribe hechos y dimensiones en SQLite y CSV procesados. La tabla <code>fact_sales</code> conserva el detalle de pedido; las dimensiones describen producto, cliente, región y calendario para agregarlo.</p><div class="method-tags"><span>SQLite</span><span>modelo estrella</span></div></article>
-          <article class="method-stage"><span class="method-stepno">04</span><span class="method-stage-label">SERVIR</span><h3>Power BI y web</h3><p>El proyecto incluye medidas DAX para el modelo semántico de Power BI. Esta web consulta SQLite en solo lectura mediante una API Node.js y dibuja las vistas en SVG; el ANOVA viene del artefacto estadístico del ETL.</p><div class="method-tags"><span>Node.js API</span><span>DAX</span><span>SVG</span></div></article>
-        </div>
-
-        <div class="method-section-label"><span class="section-kicker">02 / CALIDAD Y MODELO</span><span>GRANULARIDAD: UNA FILA POR LÍNEA DE PEDIDO</span></div>
-        <div class="method-quality-grid">
-          <article class="method-quality"><strong id="methodRows">—</strong><span>líneas transaccionales</span></article>
-          <article class="method-quality"><strong id="methodCustomers">—</strong><span>clientes identificados</span></article>
-          <article class="method-quality"><strong id="methodProducts">—</strong><span>códigos de producto</span></article>
-          <article class="method-quality"><strong id="methodCountries">—</strong><span>países observados</span></article>
-          <article class="method-quality quality-pass"><strong>0 · 0 · 0</strong><span>nulos requeridos · claves duplicadas · relaciones huérfanas</span></article>
-        </div>
-        <div class="method-model panel">
-          <div class="method-model-copy"><span class="section-kicker">MODELO ESTRELLA</span><h3>El hecho al centro; las dimensiones dan contexto.</h3><p>La tabla de hechos registra ventas y unidades por pedido. Las dimensiones permiten segmentar el mismo valor por fecha, cliente, producto o región. Así se evita mezclar niveles de detalle al comparar.</p><div class="method-note">Control ETL: clave de línea única, campos requeridos sin nulos, relaciones sin huérfanos y SQLite con integridad comprobada.</div></div>
-          <div class="schema-diagram" aria-label="Diagrama conceptual del modelo estrella">
-            <div class="schema-dimension schema-top">Calendar<br><small>fecha · mes · año</small></div>
-            <div class="schema-dimension schema-left">dim_customer<br><small>cliente</small></div>
-            <div class="schema-fact">fact_sales<br><small>ventas · unidades · pedido</small></div>
-            <div class="schema-dimension schema-right">dim_product<br><small>producto · línea</small></div>
-            <div class="schema-dimension schema-bottom">dim_region<br><small>territorio · región</small></div>
-            <span class="schema-link link-top"></span><span class="schema-link link-left"></span><span class="schema-link link-right"></span><span class="schema-link link-bottom"></span>
-          </div>
-        </div>
-
-        <div class="method-two-col">
-          <article class="panel method-card">
-            <span class="section-kicker">03 / MEDIDAS DAX</span><h3>La definición detrás del indicador</h3>
-            <p>El modelo semántico usa medidas para que las cifras respondan al contexto de filtros. Estas son las reglas principales del proyecto:</p>
-            <div class="formula-row"><code>Ventas</code><pre>SUM(fact_sales[sales])</pre></div>
-            <div class="formula-row"><code>Crecimiento mensual %</code><pre>(Ventas − Ventas mes anterior) ÷ Ventas mes anterior</pre></div>
-            <div class="formula-row"><code>Crecimiento interanual %</code><pre>(Ventas − Ventas año anterior) ÷ Ventas año anterior</pre></div>
-            <div class="formula-row"><code>Clase ABC</code><pre>Acumulado ≤ 80% → A · ≤ 95% → B · resto → C</pre></div>
-            <p class="method-footnote">Las medidas completas están en <code>powerbi/medidas.dax</code> del proyecto. La web reproduce estos cálculos sobre SQLite; el ANOVA exploratorio no cambia con los filtros. El PBIX guardado requiere todavía construir y guardar sus visuales analíticos.</p>
-          </article>
-          <article class="panel method-card method-howto">
-            <span class="section-kicker">04 / USO DEL TABLERO</span><h3>Cómo leer y explorar</h3>
-            <ol class="method-list">
-              <li><strong>Elige un contexto.</strong> Año, país, región y línea filtran los indicadores y gráficos de ventas.</li>
-              <li><strong>Compara períodos equivalentes.</strong> MoM compara el último mes disponible con el mes anterior; YoY compara ese mes con el mismo mes del año previo.</li>
-              <li><strong>Lee ABC como acumulación.</strong> Clientes se ordenan por venta descendente; el porcentaje acumulado determina la clase según 80% y 95%.</li>
-              <li><strong>Interpreta el mapa con cautela.</strong> La burbuja representa ventas por país; las ubicaciones son centroides aproximados, no límites cartográficos.</li>
-              <li><strong>Usa filtros para segmentar.</strong> El conteo de filas indica cuántas líneas quedan en el contexto seleccionado.</li>
-            </ol>
-          </article>
-        </div>
-
-        <article class="method-anova panel">
-          <div><span class="section-kicker">05 / VALIDACIÓN ESTADÍSTICA</span><h3>ANOVA de una vía: ¿todas las medias son iguales?</h3><p>Comparamos la media de ventas por línea de producto. La observación es una línea de pedido. La hipótesis nula sostiene que todas las medias de producto son iguales.</p></div>
-          <div class="method-anova-result"><div><small>F</small><strong id="methodAnovaF">—</strong></div><div><small>p-VALOR</small><strong id="methodAnovaP">—</strong></div><div><small>DECISIÓN · α = 0,05</small><strong id="methodAnovaDecision">—</strong></div></div>
-          <p class="method-note">Con p &lt; 0,05 se rechaza la hipótesis nula: al menos una media difiere. ANOVA es una prueba ómnibus; no identifica qué pares difieren. Las líneas de una misma orden o cliente podrían no ser independientes, por lo que el resultado es exploratorio y no causal.</p>
-        </article>
-
-        <div class="method-section-label"><span class="section-kicker">06 / QUÉ NO PUEDE CONCLUIRSE</span><span>LOS LÍMITES TAMBIÉN SON PARTE DEL ANÁLISIS</span></div>
-        <div class="method-boundaries">
-          <article><strong>Utilidad</strong><p>Faltan costos y gastos. Ventas no equivalen a ganancia.</p></article>
-          <article><strong>Canal</strong><p>No hay canal comercial en el origen. Región y territorio no son canal.</p></article>
-          <article><strong>Descuento</strong><p><code>discount_proxy</code> compara precio unitario y MSRP; no mide una promoción observada.</p></article>
-          <article><strong>Moneda y alcance</strong><p>La moneda no está documentada y la muestra representa una compañía, no todo el retail multinacional.</p></article>
-        </div>
       </section>
 
+      <section class="view-section requirement-view" id="view-abc" aria-labelledby="title-abc">
+        <header class="requirement-heading">
+          <span class="requirement-number">10</span><div><h2 id="title-abc" tabindex="-1">Análisis ABC de clientes (ventas acumuladas)</h2><p>Ordenamos todos los clientes por venta descendente y acumulamos su participación sobre el total filtrado. La clase A llega hasta el 80 %, la B incluye acumulados de más del 80 % hasta el 95 %, y la C cubre el resto.</p><small class="powerbi-reference">En Power BI · Clientes y ABC</small></div>
+        </header>
+        <div class="abc-summary-grid" id="abcCards"></div>
+        <article class="panel pareto-panel">
+          <div class="panel-heading"><div><h3>Curva de ventas acumuladas</h3><p>Todos los clientes de la selección en orden de facturación.</p></div><span class="panel-unit" id="abcTotal">— clientes</span></div>
+          <div class="chart-wrap pareto-wrap"><svg id="paretoChart" viewBox="0 0 900 320" role="img" aria-label="Curva acumulada de ventas de todos los clientes"></svg></div>
+        </article>
+        <article class="panel table-panel">
+          <div class="panel-heading table-heading"><div><h3>Clasificación ABC por cliente</h3></div></div>
+          <div class="table-scroll table-scroll-limited" tabindex="0" role="region" aria-label="Clasificación ABC por cliente"><table><thead><tr><th scope="col">PUESTO</th><th scope="col">CLIENTE</th><th scope="col">CLASE</th><th scope="col">VENTAS</th><th scope="col">VENTAS ACUMULADAS</th><th scope="col">% ACUMULADO</th></tr></thead><tbody id="customerTable"></tbody></table></div>
+        </article>
+      </section>
+      <nav class="analysis-navigation" aria-label="Anterior y siguiente requerimiento" hidden>
+        <a id="previousAnalysis" class="journey-next" data-view="method" href="?view=method">← Recorrido del proyecto</a>
+        <a id="nextAnalysis" class="journey-next" data-view="profit" href="?view=profit">02 Rentabilidad →</a>
+      </nav>
       <footer class="page-footer">
         <div><span class="footer-logo">R/F</span><span>Retail Fluid Intelligence</span></div>
         <div id="footerSource">ETL local · SQLite</div>
-        <div>Sin costo · Sin canal · Sin moneda documentada</div>
+        <div>Importes sin moneda documentada</div>
       </footer>
     </main>
   </div>

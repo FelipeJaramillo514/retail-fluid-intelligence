@@ -1,0 +1,30 @@
+{
+  "dataset": "https://www.kaggle.com/datasets/kyanyoga/sample-sales-data",
+  "download": "https://api.kaggle.com/v1/datasets/download/kyanyoga/sample-sales-data",
+  "extractor": "Scrapy 2.14.2",
+  "extracted_at_utc": "2026-11-20T03:20:08.217760+00:00",
+  "file": "sales_data_sample.csv",
+  "bytes": 527958,
+  "rows": 2823,
+  "sha256": "6a20c7e5ce9d8a2d196f8247b6d92c1e2dc8716c5c135d737cd2465e801ca7c1",
+  "dataset_page": {
+    "url": "https://www.kaggle.com/datasets/kyanyoga/sample-sales-data",
+    "title": "Sample Sales Data",
+    "author": "Gus Segura",
+    "license": "CC0: Public Domain",
+    "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "identifier": [
+      "435"
+    ],
+    "version": "1",
+    "listed_distribution": "https://www.kaggle.com/datasets/kyanyoga/sample-sales-data/download?datasetVersionNumber=1",
+    "listed_archive_bytes": 79402,
+    "html_sha256": "cae930b76d19e75d60ba3640041be172fb0173bd84542a6b58bd93d6284dfff7"
+  },
+  "geography_page": {
+    "url": "https://unstats.un.org/unsd/methodology/m49/overview/",
+    "file": "un_m49_countries.json",
+    "rows": 248,
+    "sha256": "eebaab1592c98e62847d2a11c4ec7bcc7cd48a53adec2963cfe9cd7f489e7098"
+  }
+}

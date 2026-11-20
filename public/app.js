@@ -8,6 +8,7 @@ const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matc
 let metadata = null;
 let currentData = null;
 let fetchSequence = 0;
+let activeView = 'method';
 
 const geo = {
   Australia: [134, -25], Austria: [14.1, 47.6], Belgium: [4.7, 50.8], Canada: [-106, 56],
@@ -70,17 +71,31 @@ function appendOptions() {
 function renderTrend(items) {
   const svg = $('#trendChart');
   const W = 900; const H = 290; const left = 55; const right = 18; const top = 18; const bottom = 34;
-  if (!items.length) { svg.innerHTML = emptyChart('No hay ventas para esta selección.'); return; }
+  if (!items.length) {
+    svg.innerHTML = emptyChart('No hay ventas para esta selección.');
+    $('#trendRange').textContent = 'Sin meses observados';
+    return;
+  }
   const values = items.map((item) => item.sales);
   const maxValue = Math.max(...values, 1);
   const minValue = Math.min(...values, 0);
   const yMin = Math.max(0, minValue - (maxValue - minValue) * .1);
   const yMax = maxValue + Math.max((maxValue - yMin) * .13, 1);
-  const x = (index) => left + (items.length < 2 ? (W - left - right) / 2 : index * (W - left - right) / (items.length - 1));
+  const start = monthIndex(items[0].key);
+  const duration = monthIndex(items.at(-1).key) - start;
+  const x = (index) => left + (duration
+    ? (monthIndex(items[index].key) - start) * (W - left - right) / duration
+    : (W - left - right) / 2);
   const y = (value) => top + (yMax - value) / (yMax - yMin || 1) * (H - top - bottom);
   const points = items.map((item, index) => [x(index), y(item.sales)]);
-  const path = points.map((point, index) => `${index ? 'L' : 'M'} ${point[0].toFixed(1)} ${point[1].toFixed(1)}`).join(' ');
-  const area = `${path} L ${points.at(-1)[0].toFixed(1)} ${(H - bottom).toFixed(1)} L ${points[0][0].toFixed(1)} ${(H - bottom).toFixed(1)} Z`;
+  const segments = [];
+  points.forEach((point, index) => {
+    if (index === 0 || monthIndex(items[index].key) - monthIndex(items[index - 1].key) > 1) segments.push([]);
+    segments.at(-1).push(point);
+  });
+  const draw = (segment) => segment.map(([px, py], index) => `${index ? 'L' : 'M'} ${px.toFixed(1)} ${py.toFixed(1)}`).join(' ');
+  const path = segments.map(draw).join(' ');
+  const area = segments.map((segment) => `${draw(segment)} L ${segment.at(-1)[0]} ${H - bottom} L ${segment[0][0]} ${H - bottom} Z`).join(' ');
   const ticks = 4;
   const grid = Array.from({ length: ticks + 1 }, (_, index) => {
     const value = yMin + (yMax - yMin) * index / ticks;
@@ -94,34 +109,90 @@ function renderTrend(items) {
   $('#trendRange').textContent = items.length > 1 ? `${monthLabel(items[0].key, true)} — ${monthLabel(items.at(-1).key, true)}` : monthLabel(items[0].key, true);
 }
 
+function monthIndex(key) {
+  const [year, month] = key.split('-').map(Number);
+  return year * 12 + month - 1;
+}
+
+function renderTable(selector, items, columns, noData = 'Sin datos para esta selección.') {
+  $(selector).innerHTML = items.length
+    ? items.map((item) => `<tr>${columns.map((value) => `<td>${escapeHtml(value(item))}</td>`).join('')}</tr>`).join('')
+    : `<tr><td colspan="${columns.length}">${escapeHtml(noData)}</td></tr>`;
+}
+
 function renderYearBars(items) {
   const host = $('#yearBars');
   if (!items.length) { host.innerHTML = '<div class="empty-inline">Sin datos</div>'; return; }
   const max = Math.max(...items.map((item) => item.sales), 1);
   host.innerHTML = items.map((item) => {
-    const height = Math.max(4, item.sales / max * 100);
+    const height = item.sales / max * 77;
     return `<div class="year-column" title="${escapeHtml(item.key)} · ${fmt2.format(item.sales)}">
       <span class="year-value">${compact(item.sales)}</span><div class="year-bar" style="height:${height}%"></div><span class="year-label">${escapeHtml(item.key)}</span>
     </div>`;
   }).join('');
 }
 
-function renderRankBars(host, items, formatter, limit = 8) {
+function renderRankBars(host, items, limit, selectable = false) {
   if (!items.length) { host.innerHTML = '<div class="empty-inline">Sin datos en esta selección.</div>'; return; }
   const list = items.slice(0, limit);
   const max = Math.max(...list.map((item) => item.sales), 1);
   host.innerHTML = list.map((item) => {
-    const name = item.key;
-    const value = formatter(item);
+    const name = escapeHtml(item.key);
+    const value = fmt2.format(item.sales);
     const width = Math.max(2, item.sales / max * 100);
-    return `<div class="rank-row" title="${escapeHtml(name)} · ${fmt2.format(item.sales)} en ventas">
-      <span class="rank-label">${escapeHtml(name)}</span><span class="rank-track"><i class="rank-fill" style="width:${width}%"></i></span><span class="rank-value">${escapeHtml(value)}</span>
-    </div>`;
+    const tag = selectable ? 'button' : 'div';
+    const control = selectable ? ` type="button" data-country="${name}"` : '';
+    return `<${tag} class="rank-row" title="${name} · ${value} en ventas"${control}>
+      <span class="rank-label">${name}</span><span class="rank-track"><i class="rank-fill" style="width:${width}%"></i></span><span class="rank-value">${value}</span>
+    </${tag}>`;
   }).join('');
 }
 
-function renderCountryBars(items) {
-  renderRankBars($('#countryBars'), items, (item) => compact(item.sales), 8);
+function renderAnnual(data) {
+  renderYearBars(data.annualComparison);
+  const endMonth = new Intl.DateTimeFormat('es-CO', { month: 'long', timeZone: 'UTC' })
+    .format(new Date(Date.UTC(2000, data.comparableThroughMonth - 1, 1)));
+  $('#annualPeriod').textContent = data.comparableThroughMonth === 1 ? 'Enero de cada año' : `Enero a ${endMonth} de cada año`;
+  renderTable('#annualTable', data.annualComparison, [
+    (item) => item.key, (item) => fmt2.format(item.observedSales), (item) => fmt2.format(item.sales),
+    (item) => item.growth == null ? 'Sin base' : signedPercent(item.growth),
+  ]);
+}
+
+function renderGrowth(items) {
+  const svg = $('#growthChart');
+  renderTable('#growthTable', [...items].reverse(), [
+    (item) => monthLabel(item.key, true),
+    (item) => fmt2.format(item.sales),
+    (item) => monthLabel(item.previousKey, true),
+    (item) => item.previousSales == null ? 'Sin datos' : fmt2.format(item.previousSales),
+    (item) => item.growth == null ? 'Sin base' : signedPercent(item.growth),
+  ]);
+  const comparable = items.filter((item) => item.growth != null);
+  if (!comparable.length) {
+    svg.innerHTML = emptyChart('No hay meses con una base de comparación.');
+    return;
+  }
+  const left = 76;
+  const right = 874;
+  const top = 20;
+  const bottom = 250;
+  const start = monthIndex(items[0].key);
+  const slotCount = monthIndex(items.at(-1).key) - start + 1;
+  const slot = (right - left) / slotCount;
+  const x = (item) => left + slot * (monthIndex(item.key) - start + .5);
+  const min = Math.min(0, ...comparable.map((item) => item.growth)) * 1.1;
+  const max = Math.max(.01, ...comparable.map((item) => item.growth)) * 1.1;
+  const y = (rate) => bottom - (rate - min) / (max - min) * (bottom - top);
+  const grid = [...new Set([min, 0, max])].map((rate) => `<line class="grid-line ${rate === 0 ? 'growth-baseline' : ''}" x1="${left}" x2="${right}" y1="${y(rate)}" y2="${y(rate)}"/><text class="axis-label" x="${left - 9}" y="${y(rate) + 4}" text-anchor="end">${signedPercent(rate)}</text>`).join('');
+  const bars = comparable.map((item) => {
+    const w = Math.min(44, slot * .65);
+    return `<rect class="growth-bar ${item.growth < 0 ? 'growth-negative' : ''}" x="${x(item) - w / 2}" y="${Math.min(y(0), y(item.growth))}" width="${w}" height="${Math.max(1, Math.abs(y(0) - y(item.growth)))}" rx="3"><title>${monthLabel(item.key, true)} · ${signedPercent(item.growth)}</title></rect>`;
+  }).join('');
+  const labelStep = Math.max(1, Math.ceil(items.length / 5));
+  const labels = items.filter((_, index) => index % labelStep === 0)
+    .map((item) => `<text class="axis-label" x="${x(item)}" y="275" text-anchor="middle">${monthLabel(item.key)}</text>`).join('');
+  svg.innerHTML = `${grid}${bars}${labels}`;
 }
 
 function renderProductLineBars(items) {
@@ -129,7 +200,7 @@ function renderProductLineBars(items) {
   if (!items.length) { host.innerHTML = '<div class="empty-inline">Sin datos en esta selección.</div>'; return; }
   const max = Math.max(...items.map((item) => item.sales), 1);
   host.innerHTML = items.map((item) => `<div class="category-row" title="${escapeHtml(item.key)} · ${fmt2.format(item.sales)} · ${fmt0.format(item.units)} unidades">
-    <span class="category-name">${escapeHtml(item.key)}</span><span class="category-meter"><i style="width:${Math.max(2, item.sales / max * 100)}%"></i></span><span class="category-value">${compact(item.sales)}</span>
+    <span class="category-name">${escapeHtml(item.key)}</span><span class="category-meter"><i style="width:${Math.max(2, item.sales / max * 100)}%"></i></span><span class="category-value">${fmt2.format(item.sales)}</span>
   </div>`).join('');
 }
 
@@ -141,7 +212,7 @@ function renderAbc(summary, data) {
     <span class="abc-letter">${escapeHtml(item.key)}</span><div><strong>${fmt0.format(item.customers)}</strong><small>clientes en clase ${escapeHtml(item.key)}</small></div><em>${fmtPct.format(item.customers / denominator)}</em>
   </article>`).join('');
   renderPareto(data.pareto);
-  renderCustomerTable(data.customers);
+  renderCustomerTable(data.abcCustomers);
 }
 
 function renderPareto(items) {
@@ -177,31 +248,23 @@ function renderMap(items) {
   const project = ([lon, lat]) => [left + (lon + 180) / 360 * (W - left - right), top + (90 - lat) / 180 * (H - top - bottom)];
   const parallels = [-60, -30, 0, 30, 60].map((lat) => { const [, y] = project([0, lat]); return `<line class="map-grid" x1="${left}" y1="${y}" x2="${W - right}" y2="${y}"/>`; }).join('');
   const meridians = [-120, -60, 0, 60, 120].map((lon) => { const [x] = project([lon, 0]); return `<line class="map-grid" x1="${x}" y1="${top}" x2="${x}" y2="${H - bottom}"/>`; }).join('');
-  // Simplified continent silhouettes are a visual base only; data is encoded solely by country markers.
-  const land = [
-    'M80 82 L116 58 164 62 202 78 218 101 208 127 180 139 169 160 144 166 131 190 115 184 101 151 83 129 72 105Z',
-    'M177 194 L207 208 220 236 213 274 198 308 187 337 174 327 172 292 160 264 164 230Z',
-    'M366 84 L397 70 430 77 451 96 473 93 495 109 526 112 551 133 542 154 516 151 499 168 472 163 454 179 431 170 414 151 393 148 382 126Z',
-    'M442 182 L470 177 491 194 503 225 495 260 480 295 461 318 447 290 436 255 425 224 430 199Z',
-    'M549 91 L579 71 619 75 650 95 668 118 655 135 626 131 605 144 578 132 560 116Z',
-    'M680 212 L712 202 743 213 754 231 739 249 709 245 690 233Z',
-  ].map((d) => `<path class="map-land" d="${d}"/>`).join('');
-  const filtered = items.filter((item) => geo[item.key]);
+  const land = '<image href="/world-map.svg" width="900" height="390" aria-hidden="true"/>';
+  const filtered = items.filter((item) => Object.hasOwn(geo, item.key));
   const max = Math.max(...filtered.map((item) => item.sales), 1);
   const circles = filtered.map((item) => {
     const [lon, lat] = geo[item.key];
     const [x, y] = project([lon, lat]);
     const radius = 3.5 + Math.sqrt(item.sales / max) * 12;
-    return `<circle class="map-point" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${radius.toFixed(1)}"><title>${escapeHtml(item.key)} · ${fmt2.format(item.sales)} en ventas</title></circle>`;
+    const label = `${escapeHtml(item.key)} · ${fmt2.format(item.sales)} en ventas`;
+    return `<circle class="map-point" role="button" tabindex="0" aria-label="${label}" data-country="${escapeHtml(item.key)}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${radius.toFixed(1)}"><title>${label}</title></circle>`;
   }).join('');
-  svg.innerHTML = `<rect class="map-bg" x="${left}" y="${top}" width="${W - left - right}" height="${H - top - bottom}" rx="13"/>${parallels}${meridians}${land}${circles}`;
-  const countries = new Set(items.map((item) => item.key));
+  const note = items.length ? '' : emptyChart('No hay ventas para esta selección.');
+  svg.innerHTML = `<rect class="map-bg" x="${left}" y="${top}" width="${W - left - right}" height="${H - top - bottom}" rx="13"/>${parallels}${meridians}${land}${circles}${note}`;
   $('#geoCount').textContent = `${fmt0.format(filtered.length)} PAÍSES`;
-  $('#geoMap').setAttribute('aria-label', `Mapa de burbujas con ${filtered.length} países geolocalizados de ${countries.size} países filtrados`);
+  svg.setAttribute('aria-label', `Mapa de ventas con ${filtered.length} de ${items.length} países geolocalizados`);
 }
 
-function renderRegionBars(items) {
-  const host = $('#regionBars');
+function renderRegionBars(host, items) {
   if (!items.length) { host.innerHTML = '<div class="empty-inline">Sin datos para esta selección.</div>'; return; }
   const max = Math.max(...items.map((item) => item.averagePerLine), 1);
   host.innerHTML = items.map((item) => `<div class="region-row" title="${escapeHtml(item.key)} · media ${fmt2.format(item.averagePerLine)} · ${fmt0.format(item.lines)} líneas">
@@ -221,6 +284,8 @@ function renderProducts(items) {
 function renderScatter(points, correlation) {
   const svg = $('#scatterChart');
   const W = 720; const H = 290; const left = 48; const right = 15; const top = 15; const bottom = 37;
+  $('#scatterCorrelation').textContent = `Correlación de Pearson · ${correlation == null ? 'sin base' : fmt2.format(correlation)}`;
+  $('#scatterN').textContent = `${fmt0.format(points.length)} líneas en la dispersión`;
   if (!points.length) { svg.innerHTML = emptyChart('Sin observaciones de precio y cantidad.'); return; }
   const maxX = Math.max(...points.map((point) => point.discountProxy), .01);
   const maxY = Math.max(...points.map((point) => point.units), 1);
@@ -234,20 +299,9 @@ function renderScatter(points, correlation) {
   const dots = points.map((point) => `<circle class="scatter-dot" cx="${x(point.discountProxy).toFixed(1)}" cy="${y(point.units).toFixed(1)}" r="2.1"><title>Brecha vs MSRP (proxy): ${fmtPct.format(point.discountProxy)} · cantidad: ${fmt0.format(point.units)} unidades · venta registrada: ${fmt2.format(point.sales)}</title></circle>`).join('');
   const labels = `<text class="axis-label" x="${left}" y="${H - 11}">0%</text><text class="axis-label" x="${W - right}" y="${H - 11}" text-anchor="end">${fmtPct.format(maxX)}</text><text class="axis-label" x="${(W + left - right) / 2}" y="${H - 1}" text-anchor="middle">BRECHA VS MSRP · PROXY</text><text class="axis-label" transform="translate(13 ${(H + top - bottom) / 2}) rotate(-90)" text-anchor="middle">UNIDADES POR LÍNEA</text>`;
   svg.innerHTML = `${grid}${dots}${labels}`;
-  $('#scatterCorrelation').textContent = `Correlación de Pearson: ${correlation == null ? 'no disponible' : fmt2.format(correlation)}`;
-  $('#scatterN').textContent = `n = ${fmt0.format(points.length)} líneas`;
 }
 
-function renderAnova(anova) {
-  $('#anovaF').textContent = fmt2.format(anova.F);
-  $('#anovaP').textContent = Number(anova.p_value).toExponential(2).replace('.', ',');
-  $('#anovaDf').textContent = `(${anova.df_between}; ${anova.df_within})`;
-  $('#anovaAlpha').textContent = fmt2.format(anova.alpha).replace('0,', ',');
-  $('#anovaDecision').textContent = anova.p_value < anova.alpha ? 'Se rechaza H₀' : 'No se rechaza H₀';
-  $('#anovaSummary').textContent = `H₀: las medias de venta por línea de producto son iguales. F(${anova.df_between}, ${anova.df_within}) = ${fmt2.format(anova.F)}; p = ${Number(anova.p_value).toExponential(2)}. La prueba está calculada sobre el conjunto completo y no cambia con los filtros del tablero.`;
-}
-
-function renderMethod(meta) {
+function renderMethod(meta, extraction) {
   $('#methodPeriod').textContent = `${meta.date_min} — ${meta.date_max}`;
   $('#methodSales').textContent = fmt2.format(meta.sales_total);
   $('#methodScope').textContent = `${fmt0.format(meta.rows)} líneas de pedido`;
@@ -255,9 +309,38 @@ function renderMethod(meta) {
   $('#methodCustomers').textContent = fmt0.format(meta.customers);
   $('#methodProducts').textContent = fmt0.format(meta.products);
   $('#methodCountries').textContent = fmt0.format(meta.countries.length);
+  const quality = meta.quality;
+  if (quality) {
+    $('#qualityChecks').textContent = [
+      quality.duplicate_keys, quality.missing_required_fields, quality.foreign_key_violations,
+    ].map((value) => fmt0.format(value)).join(' · ');
+    $('#qualityCard').hidden = false;
+  }
+  const geography = meta.web_geography;
+  if (geography) {
+    $('#geographyReconciliation').textContent = `El cruce M49 identificó ${fmt0.format(geography.countries_matched)} países de la muestra. Líneas de venta sin coincidencia geográfica: ${fmt0.format(geography.unmatched_sales_rows)}.`;
+    $('#geographyReconciliation').hidden = false;
+  }
+  if (extraction?.sha256 && extraction.sha256 === meta.source_sha256) {
+    const dataset = extraction.dataset_page;
+    $('#evidenceExtractor').textContent = extraction.extractor;
+    $('#evidenceDataset').textContent = `${dataset.title} · versión ${dataset.version} · ${dataset.license}`;
+    $('#evidenceRows').textContent = `${fmt0.format(extraction.rows)} líneas en el CSV de pedidos y ${fmt0.format(extraction.geography_page.rows)} registros extraídos de las tablas HTML de la ONU.`;
+    $('#evidenceTime').textContent = new Intl.DateTimeFormat('es-CO', {
+      dateStyle: 'long', timeStyle: 'short', timeZone: 'America/Bogota',
+    }).format(new Date(extraction.extracted_at_utc));
+    $('#evidenceHash').textContent = extraction.sha256;
+    $('#extractionEvidence').hidden = false;
+  }
   $('#methodAnovaF').textContent = fmt2.format(meta.anova.F);
   $('#methodAnovaP').textContent = Number(meta.anova.p_value).toExponential(2).replace('.', ',');
   $('#methodAnovaDecision').textContent = meta.anova.p_value < meta.anova.alpha ? 'Rechazar H₀' : 'No rechazar H₀';
+  $('#m49Panel').hidden = !meta.hasM49;
+  const welch = meta.anova.welch;
+  if (welch) {
+    $('#welchResult').hidden = false;
+    $('#welchResult').textContent = `El ANOVA de Welch admite varianzas distintas. F = ${fmt2.format(welch.F)} y p = ${Number(welch.p_value).toExponential(2).replace('.', ',')}. Ambos análisis se ejecutaron sobre la muestra completa.`;
+  }
 }
 
 function emptyChart(message) {
@@ -270,23 +353,32 @@ function renderSummary(data) {
   $('#kpiCustomers').textContent = fmt0.format(data.summary.customers);
   $('#kpiLines').textContent = `${fmt0.format(data.summary.lines)} líneas`;
   $('#kpiOrders').textContent = `${fmt0.format(data.summary.orders)} pedidos`;
-  $('#kpiMom').textContent = signedPercent(data.summary.mom);
-  $('#momContext').textContent = data.summary.latestMonth && data.summary.priorMonth ? `${monthLabel(data.summary.latestMonth)} vs ${monthLabel(data.summary.priorMonth)}` : 'mes previo no disponible';
-  $('#kpiYoy').textContent = `YoY ${signedPercent(data.summary.yoy)}`;
-  $('#latestMonthLabel').textContent = data.summary.latestMonth ? `${monthLabel(data.summary.latestMonth).toUpperCase()} · ÚLTIMO MES` : 'SIN PERÍODO';
-  $('#yoyContext').textContent = data.summary.yoy == null
-    ? 'No hay observación del mismo mes del año anterior para esta selección.'
-    : `${monthLabel(data.summary.latestMonth, true)} frente a ${monthLabel(data.summary.priorYearMonth, true)} · ${signedPercent(data.summary.yoy)}.`;
   renderTrend(data.monthly);
-  renderYearBars(data.yearly);
-  renderCountryBars(data.countrySales);
+  renderTable('#monthlyCountryTable', data.monthlyByCountry, [
+    (item) => monthLabel(item.month, true), (item) => item.country, (item) => fmt0.format(item.lines),
+    (item) => fmt0.format(item.units), (item) => fmt2.format(item.sales),
+  ]);
   renderProductLineBars(data.productLines);
+  renderRankBars($('#customerBars'), data.customers, 10);
+  renderTable('#topCustomerTable', data.customers, [
+    (item) => item.rank, (item) => item.key, (item) => fmt2.format(item.sales),
+    (item) => fmtPct.format(data.summary.sales ? item.sales / data.summary.sales : 0),
+  ]);
+  renderAnnual(data);
+  renderGrowth(data.monthlyGrowth);
   renderAbc(data.abcSummary, data);
+  renderRankBars($('#countryBars'), data.countrySales, data.countrySales.length, true);
   renderMap(data.countrySales);
-  renderRegionBars(data.regionSales);
+  renderRegionBars($('#regionBars'), data.regionSales);
+  renderRegionBars($('#m49RegionBars'), data.m49RegionSales);
   renderProducts(data.topProducts);
   renderScatter(data.discountPoints, data.discountQuantityCorrelation);
-  $('#filterCount').textContent = `${fmt0.format(data.summary.lines)} LÍNEAS EN LA VISTA`;
+  updateFilterContext();
+}
+
+function updateFilterContext() {
+  if (activeView === 'annual') $('#filterCount').textContent = 'COMPARACIÓN DE TODOS LOS AÑOS';
+  else if (currentData) $('#filterCount').textContent = `${fmt0.format(currentData.summary.lines)} LÍNEAS EN LA VISTA`;
 }
 
 async function loadDashboard() {
@@ -311,26 +403,110 @@ async function loadDashboard() {
     error.textContent = errorValue.message;
     loading.hidden = true;
   } finally {
-    if (sequence === fetchSequence) document.querySelectorAll('.filter-control select').forEach((select) => { select.disabled = false; });
+    if (sequence === fetchSequence) document.querySelectorAll('.filter-control select').forEach((select) => {
+      select.disabled = activeView === 'annual' && select.id === 'yearFilter';
+    });
   }
 }
 
-function switchView(view) {
-  document.querySelectorAll('.nav-item').forEach((item) => item.classList.toggle('active', item.dataset.view === view));
-  document.querySelectorAll('.view-section').forEach((section) => section.classList.toggle('active', section.id === `view-${view}`));
-  if (!reducedMotion) window.scrollTo({ top: 0, behavior: 'smooth' });
+function switchView(view, toggleUrl = false) {
+  const selected = document.getElementById(`view-${view}`);
+  if (!selected?.classList.contains('view-section')) {
+    if (view !== 'method') switchView('method');
+    return;
+  }
+  activeView = view;
+  document.querySelectorAll('.nav-item').forEach((item) => {
+    const active = item.dataset.view === view;
+    item.classList.toggle('active', active);
+    if (active) item.setAttribute('aria-current', 'page');
+    else item.removeAttribute('aria-current');
+  });
+  document.querySelectorAll('.view-section').forEach((section) => section.classList.toggle('active', section === selected));
+  $('.filterbar').hidden = view === 'method';
+  $('#resetFilters').hidden = view === 'method';
+  updateAnalysisNavigation(view);
+  $('#yearFilter').disabled = view === 'annual';
+  updateFilterContext();
+  if (toggleUrl) {
+    const url = new URL(window.location.href);
+    if (url.searchParams.get('view') !== view || url.hash) {
+      url.searchParams.set('view', view);
+      url.hash = '';
+      window.history.pushState(null, '', url);
+    }
+    selected.querySelector('h2')?.focus({ preventScroll: true });
+    if (view === 'method') window.scrollTo({ top: 0, behavior: 'instant' });
+    else $('.filterbar').scrollIntoView({ behavior: reducedMotion ? 'instant' : 'smooth' });
+  }
+}
+
+function updateAnalysisNavigation(view) {
+  const items = [...document.querySelectorAll('.main-nav .nav-item[data-view]')];
+  const index = items.findIndex((item) => item.dataset.view === view);
+  $('.analysis-navigation').hidden = index <= 0;
+  if (index <= 0) return;
+  const previous = items[index - 1];
+  const next = items[index + 1];
+  const previousLink = $('#previousAnalysis');
+  const nextLink = $('#nextAnalysis');
+  previousLink.dataset.view = previous.dataset.view;
+  previousLink.href = previous.href;
+  previousLink.textContent = index === 1 ? '← Recorrido del proyecto' : `← ${menuLabel(previous)}`;
+  nextLink.hidden = !next;
+  if (next) {
+    nextLink.dataset.view = next.dataset.view;
+    nextLink.href = next.href;
+    nextLink.textContent = `${menuLabel(next)} →`;
+  }
+}
+
+function menuLabel(item) {
+  return [...item.children].map((child) => child.textContent.trim()).join(' ');
+}
+
+function activateMapCountry(event) {
+  const control = event.target.closest('[data-country]');
+  if (!control || $('#countryFilter').disabled) return;
+  $('#countryFilter').value = control.dataset.country;
+  loadDashboard();
 }
 
 async function init() {
+  document.querySelectorAll('.filter-control select').forEach((select) => select.addEventListener('change', loadDashboard));
+  $('#resetFilters').addEventListener('click', () => {
+    document.querySelectorAll('.filter-control select').forEach((select) => { select.value = ''; });
+    loadDashboard();
+  });
+  document.querySelectorAll('[data-view]').forEach((link) => link.addEventListener('click', (event) => {
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    event.preventDefault();
+    switchView(link.dataset.view, true);
+  }));
+  $('#countryBars').addEventListener('click', activateMapCountry);
+  $('#geoMap').addEventListener('click', activateMapCountry);
+  $('#geoMap').addEventListener('keydown', (event) => {
+    if (!['Enter', ' '].includes(event.key) || !event.target.closest('[data-country]')) return;
+    event.preventDefault();
+    activateMapCountry(event);
+  });
+  const viewFromUrl = () => new URLSearchParams(window.location.search).get('view') || 'method';
+  switchView(viewFromUrl());
+  window.addEventListener('popstate', () => switchView(viewFromUrl()));
+
   try {
-    const response = await fetch('/api/meta');
+    const [response, extraction] = await Promise.all([
+      fetch('/api/meta'),
+      fetch('/evidence/extraction_manifest.json').then(
+        (manifest) => manifest.ok ? manifest.json() : null
+      ).catch(() => null),
+    ]);
     metadata = await response.json();
     if (!response.ok) throw new Error(metadata.error || 'No se pudo leer la metadata del ETL.');
     appendOptions();
     $('#footerSource').textContent = `${fmt0.format(metadata.rows)} líneas · ${metadata.date_min} — ${metadata.date_max}`;
     $('#filterCount').textContent = `${fmt0.format(metadata.rows)} LÍNEAS DISPONIBLES`;
-    renderMethod(metadata);
-    renderAnova(metadata.anova);
+    renderMethod(metadata, extraction);
     $('#loadingState').hidden = true;
     await loadDashboard();
   } catch (errorValue) {
@@ -338,16 +514,6 @@ async function init() {
     $('#errorState').hidden = false;
     $('#errorState').textContent = errorValue.message;
   }
-
-  document.querySelectorAll('.filter-control select').forEach((select) => select.addEventListener('change', loadDashboard));
-  $('#resetFilters').addEventListener('click', () => {
-    document.querySelectorAll('.filter-control select').forEach((select) => { select.value = ''; });
-    loadDashboard();
-  });
-  document.querySelectorAll('[data-view]').forEach((button) => button.addEventListener('click', () => switchView(button.dataset.view)));
-  document.querySelectorAll('[data-view-link]').forEach((button) => button.addEventListener('click', () => switchView(button.dataset.viewLink)));
-  const requestedView = new URLSearchParams(window.location.search).get('view');
-  if (['overview', 'customers', 'market', 'method'].includes(requestedView)) switchView(requestedView);
 }
 
 init();
