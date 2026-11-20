@@ -311,6 +311,11 @@ function renderMethod(meta, extraction) {
   $('#methodCustomers').textContent = fmt0.format(meta.customers);
   $('#methodProducts').textContent = fmt0.format(meta.products);
   $('#methodCountries').textContent = fmt0.format(meta.countries.length);
+  const cleaning = meta.quality || {};
+  const rowsIn = cleaning.rows_in ?? meta.rows;
+  const rowsOut = cleaning.rows_out ?? meta.rows;
+  $('#cleanRows').textContent = `${fmt0.format(rowsIn)} → ${fmt0.format(rowsOut)}`;
+  $('#cleanRemoved').textContent = fmt0.format(rowsIn - rowsOut);
   const quality = meta.quality;
   if (quality) {
     $('#qualityChecks').textContent = [

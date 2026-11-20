@@ -188,6 +188,21 @@ python etl/extract_kaggle.py</code></pre>
               </tbody>
             </table></div>
           </article>
+          <article class="panel table-panel journey-example etl-clean">
+            <div class="panel-heading table-heading"><div><h4>¿Qué limpia y transforma el ETL?</h4><p>Resumen de lo que hace <code>etl.py</code> con los datos antes de cargarlos.</p></div></div>
+            <div class="table-scroll" tabindex="0" role="region" aria-label="Qué limpia y transforma el ETL"><table>
+              <thead><tr><th scope="col">QUÉ</th><th scope="col">DETALLE</th></tr></thead>
+              <tbody>
+                <tr><td>Tipos</td><td>Fechas de <code>1/6/2003 0:00</code> a <code>2003-01-06</code>; cantidades, precios e importes de texto a números.</td></tr>
+                <tr><td>Espacios</td><td>Quita espacios sobrantes en los textos.</td></tr>
+                <tr><td>Columnas</td><td>Descarta 8 de las 25 columnas, porque ningún análisis las usa: teléfono, dos de dirección, nombre y apellido de contacto, y las columnas de trimestre, mes y año.</td></tr>
+                <tr><td>Campos nuevos</td><td>Año, mes, período, grupo de estado, región comercial y la brecha frente al precio de lista.</td></tr>
+                <tr><td>Estructura</td><td>Arma las tablas de clientes, productos, países y regiones.</td></tr>
+                <tr><td>Validación</td><td>Revisa duplicados, campos vacíos, cantidades no positivas, ventas negativas, fechas inválidas, países sin región y llaves rotas.</td></tr>
+              </tbody>
+            </table></div>
+            <p class="panel-caption">Resultado: filas de entrada → salida <strong id="cleanRows">—</strong> · filas eliminadas <strong id="cleanRemoved">—</strong>. La fuente ya venía limpia: el ETL estandariza, valida y enriquece más de lo que corrige.</p>
+          </article>
           <p class="journey-aside">También derivamos <code>discount_proxy</code> comparando el precio unitario con el MSRP. Este campo mide una brecha de precio y sirve para explorar su relación con las unidades compradas.</p>
           <details class="panel journey-evidence etl-code">
             <summary>Ejecutar el ETL desde el proyecto</summary>

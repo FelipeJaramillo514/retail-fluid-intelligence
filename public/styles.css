@@ -569,3 +569,10 @@ h1 em { background: linear-gradient(100deg, #4de3ff 10%, #b583ff 55%, #ff7eb6 95
   .answer-where { grid-template-columns: 1fr; }
   .answer-text { font-size: 14px; }
 }
+
+/* Tabla «¿Qué limpia y transforma el ETL?» */
+.etl-clean { margin-top: 13px; }
+.etl-clean table { min-width: 560px; }
+.etl-clean td:first-child { width: 150px; color: var(--mint); font: 12px var(--mono); }
+.etl-clean td:nth-child(2) { color: var(--soft); font-size: 13px; line-height: 1.6; }
+.etl-clean code { font: 12px var(--mono); color: #d9c8ff; }
