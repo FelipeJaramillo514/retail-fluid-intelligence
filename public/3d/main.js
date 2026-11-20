@@ -27,6 +27,8 @@ async function boot() {
     document.addEventListener('rf:data', (event) => apply(event.detail));
     globe = await initGlobe({
       canvas, tip: document.getElementById('globeTip'), count: document.getElementById('globeCount'),
+      labels: document.getElementById('globeLabels'),
+      modeButtons: [...document.querySelectorAll('.globe-mode button')],
       geo: window.__rfGeo || {},
     });
     stage.classList.add('ready');

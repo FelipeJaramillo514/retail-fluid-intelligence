@@ -352,10 +352,16 @@
         <header class="requirement-heading">
           <span class="requirement-number">08</span><div><h2 id="title-market" tabindex="-1">Mapa geográfico de ventas</h2><p>Sumamos ventas por país y las representamos con burbujas en ubicaciones aproximadas. Puedes seleccionar un país desde el mapa o la lista para explorar su información.</p><small class="powerbi-reference">En Power BI · Ventas y geografía</small></div>
         </header>
+        <div class="country-chip" id="countryChip" role="status" hidden>
+          <span>País seleccionado: <b id="chipName"></b>. El mapa y los totales muestran solo ese país.</span>
+          <button type="button" id="clearCountry">✕ Ver todos los países</button>
+        </div>
         <article class="panel globe-panel">
-          <div class="panel-heading"><div><h3>Globo 3D de ventas</h3><p>Arrastra para girar y usa la rueda para acercar. Cada prisma es un país y su altura es proporcional a las ventas. Haz clic en uno para filtrarlo.</p></div><span class="panel-unit" id="globeCount">— países</span></div>
+          <div class="panel-heading"><div><h3>Ventas sobre el mapa en 3D</h3><p>Cada barra se levanta sobre su país y su altura es proporcional a las ventas. Arrastra para girar, usa la rueda para acercar y haz clic en una barra para filtrar ese país.</p></div>
+            <div class="globe-side"><div class="globe-mode" role="group" aria-label="Tipo de vista"><button type="button" data-mode="globe" aria-pressed="true">Globo</button><button type="button" data-mode="map" aria-pressed="false">Mapa plano</button></div><span class="panel-unit" id="globeCount">— países</span></div></div>
           <div class="globe-stage">
-            <canvas id="globeCanvas" role="img" aria-label="Globo terráqueo 3D con prismas de ventas por país. El mapa y la lista de abajo ofrecen la misma información."></canvas>
+            <canvas id="globeCanvas" role="img" aria-label="Mapa 3D con barras de ventas por país. El mapa 2D y la lista de abajo ofrecen la misma información."></canvas>
+            <div class="globe-labels" id="globeLabels" aria-hidden="true"></div>
             <div class="globe-tip" id="globeTip" hidden></div>
           </div>
         </article>

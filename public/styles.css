@@ -503,3 +503,28 @@ h1 em { background: linear-gradient(100deg, #4de3ff 10%, #b583ff 55%, #ff7eb6 95
 @media (hover: none) {
   .globe-stage canvas { cursor: default; }
 }
+
+/* ====== Mapa 3D (globo / plano) ====== */
+.globe-panel .panel-heading { align-items: flex-start; gap: 16px; }
+.globe-side { display: grid; gap: 8px; justify-items: end; flex-shrink: 0; }
+.globe-mode { display: inline-flex; padding: 3px; border: 1px solid var(--line-strong); border-radius: 999px; background: rgba(8, 7, 28, .6); }
+.globe-mode button { border: 0; border-radius: 999px; padding: 6px 14px; background: transparent; color: var(--soft); font-size: 12px; cursor: pointer; transition: background .2s, color .2s; }
+.globe-mode button[aria-pressed="true"] { background: linear-gradient(120deg, rgba(77, 227, 255, .28), rgba(197, 139, 255, .28)); color: #fff; box-shadow: inset 0 0 0 1px rgba(160, 220, 255, .35); }
+.globe-stage { height: clamp(420px, 62vh, 640px); background: radial-gradient(70% 80% at 50% 50%, rgba(77, 227, 255, .08), transparent 72%); }
+.globe-labels { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 2; }
+.globe-label { position: absolute; left: 0; top: 0; display: grid; justify-items: center; gap: 1px; padding: 2px 7px; border-radius: 8px; background: rgba(8, 7, 30, .72); border: 1px solid rgba(160, 200, 255, .22); font: 600 11px var(--sans); color: #fff; white-space: nowrap; text-shadow: none; will-change: transform; }
+.globe-label i { font: 10px var(--mono); font-style: normal; color: var(--mint); }
+.globe-label i:empty { display: none; }
+@media (max-width: 620px) {
+  .globe-panel .panel-heading { flex-direction: column; }
+  .globe-side { justify-items: start; grid-auto-flow: column; align-items: center; gap: 12px; }
+  .globe-stage { height: 420px; }
+  .globe-label { font-size: 10px; padding: 1px 5px; }
+}
+
+/* Aviso de país seleccionado, con salida clara para quitar el filtro. */
+.country-chip { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 13px; padding: 10px 14px; border: 1px solid rgba(77, 227, 255, .35); border-radius: 12px; background: linear-gradient(110deg, rgba(36, 112, 170, .5), rgba(52, 30, 120, .5)); color: var(--text); font-size: 13px; }
+.country-chip b { color: var(--mint); }
+.country-chip button { border: 1px solid rgba(255, 126, 182, .55); border-radius: 999px; padding: 7px 14px; background: rgba(255, 126, 182, .14); color: #ffd3e6; font-size: 12px; cursor: pointer; transition: background .2s; }
+.country-chip button:hover { background: rgba(255, 126, 182, .3); }
+.country-chip[hidden] { display: none; }

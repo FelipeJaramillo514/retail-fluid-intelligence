@@ -382,6 +382,7 @@ function renderSummary(data) {
 }
 
 function updateFilterContext() {
+  updateCountryChip();
   if (activeView === 'annual') $('#filterCount').textContent = 'COMPARACIÓN DE TODOS LOS AÑOS';
   else if (currentData) $('#filterCount').textContent = `${fmt0.format(currentData.summary.lines)} LÍNEAS EN LA VISTA`;
 }
@@ -470,11 +471,23 @@ function menuLabel(item) {
   return [...item.children].map((child) => child.textContent.trim()).join(' ');
 }
 
+// Seleccionar un país lo filtra; volver a seleccionar el mismo país quita el filtro.
+function toggleCountry(country) {
+  const select = $('#countryFilter');
+  if (select.disabled) return;
+  select.value = select.value === country ? '' : country;
+  loadDashboard();
+}
+
 function activateMapCountry(event) {
   const control = event.target.closest('[data-country]');
-  if (!control || $('#countryFilter').disabled) return;
-  $('#countryFilter').value = control.dataset.country;
-  loadDashboard();
+  if (control) toggleCountry(control.dataset.country);
+}
+
+function updateCountryChip() {
+  const country = $('#countryFilter').value;
+  $('#countryChip').hidden = !country;
+  $('#chipName').textContent = country;
 }
 
 async function init() {
@@ -488,9 +501,9 @@ async function init() {
     event.preventDefault();
     switchView(link.dataset.view, true);
   }));
-  document.addEventListener('rf:country', (event) => {
-    if ($('#countryFilter').disabled) return;
-    $('#countryFilter').value = event.detail.country;
+  document.addEventListener('rf:country', (event) => toggleCountry(event.detail.country));
+  $('#clearCountry').addEventListener('click', () => {
+    $('#countryFilter').value = '';
     loadDashboard();
   });
   $('#countryBars').addEventListener('click', activateMapCountry);
