@@ -466,3 +466,40 @@ h1 em { background: linear-gradient(100deg, #4de3ff 10%, #b583ff 55%, #ff7eb6 95
 .map-label { fill: #f0f1fb; font-size: 10px; }
 .requirement-view .panel-heading p, .requirement-view .panel-caption { color: #d0d2ea; }
 .anova-metrics small, .method-anova-result small, .decision-chip { font-size: 10px; }
+
+/* ====== Responsive: móvil y tablet ====== */
+@media (max-width: 900px) {
+  /* Los gráficos SVG conservan un ancho legible y se desplazan lateralmente. */
+  .chart-wrap, .map-wrap { overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; scrollbar-width: thin; }
+  .trend-wrap svg, .pareto-wrap svg { min-width: 760px; }
+  .scatter-wrap svg { min-width: 600px; }
+  .map-wrap svg { min-width: 700px; }
+  .chart-wrap::after { content: none; }
+  .year-bars { overflow-x: auto; }
+}
+@media (max-width: 620px) {
+  .trend-wrap, .pareto-wrap { height: 250px; }
+  .scatter-wrap { height: 240px; }
+  .map-wrap { height: 280px; }
+
+  /* Filtros en cuadrícula 2×2 en vez de una fila con scroll. */
+  .filterbar { flex-wrap: wrap; overflow: visible; gap: 8px 0; padding: 10px; }
+  .filter-title { width: 100%; padding-bottom: 4px; }
+  .filter-divider { display: none; }
+  .filter-control { flex: 1 1 50%; min-width: 0; padding: 4px 8px; border-right: 0; }
+  .filter-control select { max-width: 100%; width: 100%; font-size: 13px; }
+  .filter-control > span { font-size: 10px; }
+  .filter-count { display: block; width: 100%; margin: 4px 0 0; padding: 0 8px; }
+
+  .kpi-card:last-child:nth-child(odd) { grid-column: 1 / -1; }
+  .globe-panel { padding: 14px 12px 12px; }
+  .globe-panel .panel-heading { flex-direction: column; gap: 4px; }
+  .globe-tip { min-width: 140px; }
+  .requirement-heading, .journey-heading { padding: 10px; }
+  .table-panel table { font-size: 11px; }
+  .intro-copy { padding: 10px 12px; }
+  h1 { font-size: 30px; }
+}
+@media (hover: none) {
+  .globe-stage canvas { cursor: default; }
+}
